@@ -1,13 +1,28 @@
 const express = require('express');
 const moment = require('moment');
+const fetch = require('node-fetch');
 
-const cloudflareScraper = require('cloudflare-scraper');
+const cloudscraper = require('cloudscraper');
 
 const puppeteer = require('puppeteer-extra');
 const StealthPlugin = require('puppeteer-extra-plugin-stealth');
 puppeteer.use(StealthPlugin());
 
 const fs = require('fs');
+
+String.prototype.tryMatch = function (regex, index = 1) {
+	try {
+		return this.toString().match(regex)[index].trim();
+	} catch {
+		return null;
+	}
+};
+
+function clearString(string) {
+	return string
+		.replace(/(\n|\t)/g, ' ')
+		.replace(/&#(?:x([\da-f]+)|(\d+));/gi, (_, hex, dec) => String.fromCharCode(dec || +('0x' + hex)));
+}
 
 (async () => {
 	const browser = await puppeteer.launch({
@@ -52,15 +67,16 @@ const fs = require('fs');
 		};
 
 		try {
-			const response = await cloudflareScraper.get('https://japscan.se');
-			const uncluttered = response.replace(/(\n|\t)/g, ' ');
+			const response = await cloudscraper.get('https://japscan.se');
+			const uncluttered = clearString(response);
 			const choosenDay = uncluttered.match(req.query.day ? days[req.query.day] : days[0])[1];
 
 			const mangaOfTheDay = [...choosenDay.match(/<h3 class=\"text-truncate\">.*?<\/div>/gm)];
 			const parsed = mangaOfTheDay.map(e => ({
-				href: e.match(/href=\"(\/manga\/.+?)\"/)[1],
-				name: e.match(/href=\"\/manga\/.+?\">(.*?)<\/a>/)[1],
+				href: e.tryMatch(/href=\"(\/manga\/.+?)\"/),
+				name: e.tryMatch(/href=\"\/manga\/.+?\">(.*?)<\/a>/),
 				hot: e.match(/<span class=\"badge badge-pill badge-danger align-text-top\">Hot<\/span>/) ? true : false,
+				info: e.tryMatch(/<span class=\"badge badge-primary\">(.+?)<\/span>/),
 				chapters: [...e.matchAll(/href=\"(\/lecture-en-ligne\/.+?)\">(.*?)<\/a>/g)].map(c => ({
 					href: c[1],
 					name: c[2]
@@ -68,6 +84,67 @@ const fs = require('fs');
 			}));
 
 			res.send(parsed);
+		} catch (error) {
+			console.log(error);
+			res.send(error);
+		}
+	});
+
+	app.get('/manga', async (req, res) => {
+		try {
+			const response = await cloudscraper.get(`https://japscan.se${req.query.uri}/`);
+			const uncluttered = clearString(response);
+
+			const title = uncluttered.tryMatch(/<h1>(.+?)<\/h1>/);
+			const imgURL = uncluttered.tryMatch(/<img .+? src=\"(.+?)\" alt=\"\">/);
+			const date = uncluttered.tryMatch(/Date Sortie:<\/span>(.+?)<\/p>/);
+			const status = uncluttered.tryMatch(/Statut:<\/span>(.+?)<\/p>/);
+			const type = uncluttered.tryMatch(/Type\(s\):<\/span>(.+?)<\/p>/);
+			const genre = uncluttered.tryMatch(/Genre\(s\):<\/span>(.+?)<\/p>/);
+			const author = uncluttered.tryMatch(/Auteur\(s\):<\/span>(.+?)<\/p>/);
+			const volumes = uncluttered.tryMatch(/Volumes VF:<\/span>(.+?)<\/p>/);
+			const anime = uncluttered.tryMatch(/Adaptation En Animé:<\/span>(.+?)<\/p>/);
+			const synopsis = uncluttered.tryMatch(
+				/<p class=\"list-group-item list-group-item-primary text-justify\">(.+?)<\/p>/
+			);
+
+			const chapters = [
+				...uncluttered.matchAll(
+					/<div class=\"chapters_list text-truncate\">.*?<span.*?>(.+?)<.*?href=\"(.+?)\".*?>(.+?)((<span.*?>(.+?)<\/span>)|(<\/a>))/g
+				)
+			].map(c => ({
+				date: c[1].trim(),
+				href: c[2].trim(),
+				name: c[3].trim(),
+				infos: c[6] || ''
+			}));
+
+			const files = fs.readdirSync('assets/img');
+			const imgName = imgURL.split('/mangas/')[1];
+
+			if (!files.includes(imgName)) {
+				const imgResponse = await fetch(`https://japscan.se${imgURL}`);
+				const buffer = await imgResponse.buffer();
+
+				fs.writeFileSync(`assets/img/${imgName}`, buffer);
+			}
+
+			res.send({
+				infos: {
+					title,
+					img: `/img/${imgName}`,
+					date,
+					status,
+					type,
+					genre,
+					author,
+					volumes,
+					anime,
+					synopsis
+				},
+
+				chapters
+			});
 		} catch (error) {
 			console.log(error);
 			res.send(error);
@@ -87,13 +164,7 @@ const fs = require('fs');
 		await page.setRequestInterception(true);
 		page.on('request', request => {
 			const url = request.url();
-			const filters = [
-				'japscan.se',
-				'cdnjs.cloudflare.com',
-				'cdn.statically.io',
-				'ajax.cloudflare.com',
-				'fonts.googleapis.com'
-			];
+			const filters = ['japscan.se', 'cdnjs.cloudflare.com', 'cdn.statically.io', 'ajax.cloudflare.com'];
 
 			const shouldPass = filters.some(urlPart => url.includes(urlPart));
 
@@ -105,7 +176,7 @@ const fs = require('fs');
 			clearTimeout(pageTimeout);
 
 			if (response.url().match(/^https:\/\/www.japscan\.se/) && response.url().includes(req.query.uri)) {
-				next = (await response.text()).match(/data-next-link=\"(.+?)\"/)[1];
+				next = (await response.text()).tryMatch(/data-next-link=\"(.+?)\"/);
 				const files = fs.readdirSync('assets/img');
 
 				for (let file of files) {
@@ -140,6 +211,20 @@ const fs = require('fs');
 
 		await page.goto(`https://japscan.se${req.query.uri}`);
 	});
+
+	setInterval(() => {
+		const now = moment();
+
+		fs.readdir('assets/img', (err, files) => {
+			for (file of files) {
+				const stats = fs.statSync(`assets/img/${file}`);
+
+				if (now - moment(stats.birthtime) > 900000) {
+					fs.unlink(`assets/img/${file}`, () => ({}));
+				}
+			}
+		});
+	}, 600000);
 
 	app.listen(3001);
 })();

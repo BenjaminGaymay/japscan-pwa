@@ -1,6 +1,6 @@
 <template>
 	<div class="w-full">
-		<NuxtLink :to="next">
+		<NuxtLink v-if="next && img" :to="next">
 			<img :src="img" />
 		</NuxtLink>
 	</div>
@@ -12,20 +12,22 @@ export default {
 		return { img: null, next: null };
 	},
 
-	async asyncData({ params, $axios }) {
-		const response = await $axios.get('/api/page', {
-			params: {
-				uri: `/lecture-en-ligne/${params.manga}/${params.chapter}/${params.page || ''}`
-			}
-		});
+	mounted() {
+		this.$axios
+			.get('/api/page', {
+				params: {
+					uri: `/lecture-en-ligne/${this.$route.params.manga}/${this.$route.params.chapter}/${
+						this.$route.params.page || ''
+					}`
+				}
+			})
+			.then(response => {
+				if (response.status === 200 || response.status === 304) {
+					this.img = `/api/${response.data.img}`;
 
-		if (response.status === 200 || response.status === 304) {
-			response.data.img = `/api/${response.data.img}`;
-
-			return response.data;
-		}
-
-		return { img: null, next: null };
+					this.next = response.data.next;
+				}
+			});
 	}
 };
 </script>

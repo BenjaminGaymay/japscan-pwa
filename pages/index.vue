@@ -1,7 +1,11 @@
 <template>
 	<div class="container">
 		<div class="manga" v-for="manga in mangas" :key="manga.href">
-			<a class="manga-name" :href="manga.href">{{ manga.name }}</a>
+			<NuxtLink class="manga-name" :class="{ 'manga-name-hot': manga.hot }" :to="manga.href">
+				{{ manga.name }}
+			</NuxtLink>
+
+			{{ manga.info }}
 
 			<div class="manga-chapters">
 				<NuxtLink v-for="chapter in manga.chapters" :key="chapter.href" :to="chapter.href">
@@ -20,10 +24,10 @@ export default {
 		};
 	},
 
-	async mounted() {
-		const response = await this.$axios.get('/api/', { params: { day: '0' } });
-
-		if (response.status === 200 || response.status === 304) this.mangas = response.data;
+	mounted() {
+		this.$axios.get('/api/', { params: { day: '0' } }).then(response => {
+			if (response.status === 200 || response.status === 304) this.mangas = response.data;
+		});
 	}
 };
 </script>
@@ -38,6 +42,10 @@ export default {
 
 	&-name {
 		font-weight: bold;
+
+		&-hot {
+			color: red;
+		}
 	}
 
 	&-chapters {
