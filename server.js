@@ -69,6 +69,7 @@ function clearString(string) {
 		try {
 			const response = await cloudscraper.get('https://japscan.se');
 			const uncluttered = clearString(response);
+			console.log(req.query.day, days[req.query.day]);
 			const choosenDay = uncluttered.match(req.query.day ? days[req.query.day] : days[0])[1];
 
 			const mangaOfTheDay = [...choosenDay.match(/<h3 class=\"text-truncate\">.*?<\/div>/gm)];
@@ -76,12 +77,16 @@ function clearString(string) {
 				href: e.tryMatch(/href=\"(\/manga\/.+?)\"/),
 				name: e.tryMatch(/href=\"\/manga\/.+?\">(.*?)<\/a>/),
 				hot: e.match(/<span class=\"badge badge-pill badge-danger align-text-top\">Hot<\/span>/) ? true : false,
-				info: e.tryMatch(/<span class=\"badge badge-primary\">(.+?)<\/span>/),
-				chapters: [...e.matchAll(/href=\"(\/lecture-en-ligne\/.+?)\">(.*?)<\/a>/g)].map(c => ({
+				chapters: [
+					...e.matchAll(/href=\"(\/lecture-en-ligne\/.+?)\">(.*?)<\/a>.*?((<span.*?>(.+?)<\/span>)|(<\/p>))/g)
+				].map(c => ({
 					href: c[1],
-					name: c[2]
+					name: c[2],
+					infos: c[5] || ''
 				}))
 			}));
+
+			console.log(parsed[15]);
 
 			res.send(parsed);
 		} catch (error) {
@@ -219,12 +224,12 @@ function clearString(string) {
 			for (file of files) {
 				const stats = fs.statSync(`assets/img/${file}`);
 
-				if (now - moment(stats.birthtime) > 900000) {
+				if (now - moment(stats.birthtime) > 60000) {
 					fs.unlink(`assets/img/${file}`, () => ({}));
 				}
 			}
 		});
-	}, 600000);
+	}, 120000);
 
 	app.listen(3001);
 })();

@@ -18,11 +18,7 @@
 			{{ infos.synopsis }}
 		</p>
 
-		<div class="chapters">
-			<NuxtLink v-for="chapter in chapters" :key="chapter.href" :to="chapter.href">
-				{{ chapter.name }} {{ chapter.infos }} <span class="float-right">{{ chapter.date }}</span>
-			</NuxtLink>
-		</div>
+		<ChapterLinks :chapters="chapters" />
 	</div>
 </template>
 

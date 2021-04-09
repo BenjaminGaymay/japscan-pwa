@@ -1,18 +1,10 @@
 <template>
-	<div class="container">
-		<div class="manga" v-for="manga in mangas" :key="manga.href">
-			<NuxtLink class="manga-name" :class="{ 'manga-name-hot': manga.hot }" :to="manga.href">
-				{{ manga.name }}
-			</NuxtLink>
-
-			{{ manga.info }}
-
-			<div class="manga-chapters">
-				<NuxtLink v-for="chapter in manga.chapters" :key="chapter.href" :to="chapter.href">
-					{{ chapter.name }}
-				</NuxtLink>
-			</div>
+	<div class="m-auto max-w-screen-md">
+		<div class="flex">
+			<span v-for="index in 7" :key="index" @click="refresh(index - 1)">{{ index - 1 }}</span>
 		</div>
+
+		<MangaList :mangas="mangas" />
 	</div>
 </template>
 
@@ -20,39 +12,24 @@
 export default {
 	data() {
 		return {
+			days: ["Aujourd'hui", 'Hier'],
+			selected: 0,
 			mangas: []
 		};
 	},
 
 	mounted() {
-		this.$axios.get('/api/', { params: { day: '0' } }).then(response => {
-			if (response.status === 200 || response.status === 304) this.mangas = response.data;
-		});
+		this.refresh(this.selected);
+	},
+
+	methods: {
+		refresh(day) {
+			this.selected = day;
+
+			this.$axios.get('/api/', { params: { day } }).then(response => {
+				if (response.status === 200 || response.status === 304) this.mangas = response.data;
+			});
+		}
 	}
 };
 </script>
-
-<style lang="scss" scoped>
-.manga {
-	border: 1px solid black;
-
-	&:not(:last-child) {
-		margin-bottom: 15px;
-	}
-
-	&-name {
-		font-weight: bold;
-
-		&-hot {
-			color: red;
-		}
-	}
-
-	&-chapters {
-		transform: translateX(25px);
-		a {
-			display: block;
-		}
-	}
-}
-</style>
