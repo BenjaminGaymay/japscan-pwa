@@ -1,7 +1,11 @@
 <template>
 	<div class="list px-6">
 		<div class="manga" v-for="manga in mangas" :key="manga.href">
-			<NuxtLink class="manga-name text-2xl text-white" :class="{ 'manga-name-hot': manga.hot }" :to="manga.href">
+			<NuxtLink
+				class="manga-name text-2xl text-blue-300"
+				:class="{ 'manga-name-hot': manga.hot }"
+				:to="manga.href"
+			>
 				{{ manga.name }}
 			</NuxtLink>
 
@@ -49,10 +53,10 @@ export default {
 		&-name {
 			font-weight: bold;
 
-			&-hot::after {
+			&-hot::before {
 				content: ' ';
 				display: inline-block;
-				background-color: #00ff00;
+				background-color: rgb(249, 168, 212);
 				height: 15px;
 				width: 15px;
 				border-radius: 15px;

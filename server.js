@@ -56,23 +56,53 @@ function clearString(string) {
 
 	app.get('/', async (req, res) => {
 		const days = {
-			0: /id=\"tab-1\">(.+?)<div class=\"tab-pane container \" id=\"tab-2\">/,
-			1: /id=\"tab-2\">(.+?)<div class=\"tab-pane container \" id=\"tab-3\">/,
-			2: /id=\"tab-3\">(.+?)<div class=\"tab-pane container \" id=\"tab-4\">/,
-			3: /id=\"tab-4\">(.+?)<div class=\"tab-pane container \" id=\"tab-5\">/,
-			4: /id=\"tab-5\">(.+?)<div class=\"tab-pane container \" id=\"tab-6\">/,
-			5: /id=\"tab-6\">(.+?)<div class=\"tab-pane container \" id=\"tab-7\">/,
-			6: /id=\"tab-7\">(.+?)<div class=\"tab-pane container \" id=\"tab-8\">/,
-			7: /id=\"tab-8\">(.+?)$/
+			0: [
+				/id=\"tab-1\".*?>(.+?)<div class=\"tab-pane container \" id=\"tab-2\">/,
+				/<span data-id=\"1\".*?>(.+?)<span data-id=\"2\"/
+			],
+			1: [
+				/id=\"tab-2\".*?>(.+?)<div class=\"tab-pane container \" id=\"tab-3\">/,
+				/<span data-id=\"2\".*?>(.+?)<span data-id=\"3\"/
+			],
+			2: [
+				/id=\"tab-3\".*?>(.+?)<div class=\"tab-pane container \" id=\"tab-4\">/,
+				/<span data-id=\"3\".*?>(.+?)<span data-id=\"4\"/
+			],
+			3: [
+				/id=\"tab-4\".*?>(.+?)<div class=\"tab-pane container \" id=\"tab-5\">/,
+				/<span data-id=\"4\".*?>(.+?)<span data-id=\"5\"/
+			],
+			4: [
+				/id=\"tab-5\".*?>(.+?)<div class=\"tab-pane container \" id=\"tab-6\">/,
+				/<span data-id=\"5\".*?>(.+?)<span data-id=\"6\"/
+			],
+			5: [
+				/id=\"tab-6\".*?>(.+?)<div class=\"tab-pane container \" id=\"tab-7\">/,
+				/<span data-id=\"6\".*?>(.+?)<span data-id=\"7\"/
+			],
+			6: [
+				/id=\"tab-7\".*?>(.+?)<div class=\"tab-pane container \" id=\"tab-8\">/,
+				/<span data-id=\"7\".*?>(.+?)<span data-id=\"5\"/
+			],
+			7: [/id=\"tab-8\".*?>(.+)/, /<span data-id=\"8\".*?>(.+)/]
 		};
 
 		try {
 			const response = await cloudscraper.get('https://japscan.se');
 			const uncluttered = clearString(response);
-			console.log(req.query.day, days[req.query.day]);
-			const choosenDay = uncluttered.match(req.query.day ? days[req.query.day] : days[0])[1];
 
-			const mangaOfTheDay = [...choosenDay.match(/<h3 class=\"text-truncate\">.*?<\/div>/gm)];
+			let choosenDay;
+
+			try {
+				choosenDay = uncluttered.match(req.query.day ? days[req.query.day][0] : days[0][0])[1];
+			} catch {
+				console.log(req.query.day ? days[req.query.day][1] : days[0][1]);
+				fs.writeFileSync('a.html', uncluttered);
+				choosenDay = uncluttered.match(req.query.day ? days[req.query.day][1] : days[0][1])[1];
+				fs.writeFileSync('regexed', choosenDay);
+			}
+
+			const mangaOfTheDay = [...choosenDay.match(/<h3 class=\"text-truncate.*?>.*?<\/div>/gm)];
 			const parsed = mangaOfTheDay.map(e => ({
 				href: e.tryMatch(/href=\"(\/manga\/.+?)\"/),
 				name: e.tryMatch(/href=\"\/manga\/.+?\">(.*?)<\/a>/),
@@ -85,8 +115,6 @@ function clearString(string) {
 					infos: c[5] || ''
 				}))
 			}));
-
-			console.log(parsed[15]);
 
 			res.send(parsed);
 		} catch (error) {

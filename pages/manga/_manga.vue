@@ -1,24 +1,44 @@
 <template>
-	<div v-if="infos" class="w-full">
-		<h1>{{ infos.title }}</h1>
+	<div v-if="infos" class="m-auto max-w-screen-md text-white">
+		<h1 class="mt-6 mb-12 text-center text-5xl">{{ infos.title }}</h1>
 
-		<img :src="infos.img" />
+		<div class="flex gap-6 px-3">
+			<div>
+				<img class="picture" :src="infos.img" />
+			</div>
 
-		<div>
-			<div>Date : {{ infos.date }}</div>
-			<div>Statut : {{ infos.status }}</div>
-			<div>Type : {{ infos.type }}</div>
-			<div>Genre : {{ infos.genre }}</div>
-			<div>Auteur{{ infos.author.split(',') > 1 ? 's' : '' }} : {{ infos.author }}</div>
-			<div v-if="infos.volumes">Volumes : {{ infos.volumes }}</div>
-			<div>Animé : {{ infos.anime }}</div>
+			<div class="infos">
+				<div v-if="infos.date"><span class="text-pink-300"> Date : </span> {{ infos.date }}</div>
+				<div v-if="infos.status"><span class="text-pink-300"> Statut : </span> {{ infos.status }}</div>
+				<div v-if="infos.type"><span class="text-pink-300"> Type : </span> {{ infos.type }}</div>
+				<div v-if="infos.genre">
+					<span class="text-pink-300"> Genre{{ infos.genre.split(',').length > 1 ? 's' : '' }} : </span>
+					{{ infos.genre }}
+				</div>
+				<div v-if="infos.author">
+					<span class="text-pink-300">Auteur{{ infos.author.split(',').length > 1 ? 's' : '' }} : </span>
+					{{ infos.author }}
+				</div>
+				<div v-if="infos.volumes"><span class="text-pink-300">Volumes : </span> {{ infos.volumes }}</div>
+				<div v-if="infos.anime"><span class="text-pink-300">Animé : </span> {{ infos.anime }}</div>
+			</div>
 		</div>
 
-		<p>
-			{{ infos.synopsis }}
-		</p>
+		<fieldset class="my-6 mx-1" v-if="infos.synopsis">
+			<legend class="ml-3 text-pink-300 px-1">Synopsis</legend>
+			<p class="text-sm px-3 py-1 text-justify">
+				{{ infos.synopsis }}
+			</p>
+		</fieldset>
 
-		<ChapterLinks :chapters="chapters" />
+		<fieldset class="chapters-list my-6 mx-1" v-if="chapters">
+			<legend class="ml-3 text-blue-300 px-1">Chapitres</legend>
+			<p class="px-3 py-1">
+				<ChapterLinks :chapters="chapters" />
+			</p>
+		</fieldset>
+
+		<ScrollToTop />
 	</div>
 </template>
 
@@ -47,9 +67,28 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.chapters {
-	a {
-		display: block;
+.picture {
+	width: 250px;
+	min-width: 250px;
+
+	@media (max-width: 1000px) {
+		min-width: 170px;
+		width: 170px;
 	}
+}
+
+.infos {
+	div {
+		margin-top: 0.5rem;
+	}
+}
+
+fieldset {
+	border: 1px solid pink;
+	border-radius: 8px;
+}
+
+.chapters-list {
+	border: 1px solid rgb(147, 197, 253);
 }
 </style>

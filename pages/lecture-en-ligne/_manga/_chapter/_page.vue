@@ -1,5 +1,5 @@
 <template>
-	<div class="w-full">
+	<div class="m-auto max-w-screen-md text-white">
 		<NuxtLink v-if="next && img" :to="next">
 			<img :src="img" />
 		</NuxtLink>
@@ -13,6 +13,8 @@ export default {
 	},
 
 	mounted() {
+		window.addEventListener('keyup', this.handleKeypress);
+
 		this.$axios
 			.get('/api/page', {
 				params: {
@@ -28,6 +30,20 @@ export default {
 					this.next = response.data.next;
 				}
 			});
+	},
+
+	beforeDestroy() {
+		window.removeEventListener('keyup', this.handleKeypress);
+	},
+
+	methods: {
+		handleKeypress(e) {
+			if (e.key == 'ArrowRight' && this.next) {
+				this.$router.push(this.next);
+			} else if (e.key == 'ArrowLeft' && this.$route.params.page) {
+				this.$router.go(-1);
+			}
+		}
 	}
 };
 </script>
@@ -35,7 +51,7 @@ export default {
 <style lang="scss" scoped>
 img {
 	margin: auto;
-	height: 100vh;
-	width: auto;
+	height: auto;
+	width: 100%;
 }
 </style>
