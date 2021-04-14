@@ -34,21 +34,8 @@ export default {
 		padding-bottom: 1.5rem;
 
 		&:not(:last-child) {
-			// border-bottom: 1px solid white;
 			margin-bottom: 1.5rem;
 		}
-
-		// &::after {
-		// 		content: '';
-		// 		background: white;
-		// 		position: absolute;
-		// 		bottom: 0;
-		// 		left: 0;
-		// 		height: 1px;
-		// 		width: 50%;
-		// 		margin: auto;
-		// 		transform: translateX(50%);
-		// 	}
 
 		&-name {
 			font-weight: bold;

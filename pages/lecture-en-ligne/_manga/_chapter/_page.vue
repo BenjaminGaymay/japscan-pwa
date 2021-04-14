@@ -1,6 +1,8 @@
 <template>
-	<div class="m-auto max-w-screen-md text-white">
-		<NuxtLink v-if="next && img" :to="next">
+	<div class="m-auto max-w-screen-md text-white pt-6">
+		<Loader v-if="loading" />
+
+		<NuxtLink v-else-if="next && img" :to="next">
 			<img :src="img" />
 		</NuxtLink>
 	</div>
@@ -9,7 +11,7 @@
 <script>
 export default {
 	data() {
-		return { img: null, next: null };
+		return { loading: true, img: null, next: null };
 	},
 
 	mounted() {
@@ -29,6 +31,8 @@ export default {
 
 					this.next = response.data.next;
 				}
+
+				this.loading = false;
 			});
 	},
 

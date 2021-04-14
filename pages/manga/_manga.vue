@@ -1,6 +1,6 @@
 <template>
 	<div v-if="infos" class="m-auto max-w-screen-md text-white">
-		<h1 class="mt-6 mb-12 text-center text-5xl">{{ infos.title }}</h1>
+		<h1 class="mt-6 mb-12 text-center text-3xl lg:text-5xl">{{ infos.title }}</h1>
 
 		<div class="flex gap-6 px-3">
 			<div>
@@ -71,7 +71,7 @@ export default {
 	width: 250px;
 	min-width: 250px;
 
-	@media (max-width: 1000px) {
+	@media (max-width: 1024px) {
 		min-width: 170px;
 		width: 170px;
 	}
@@ -84,7 +84,7 @@ export default {
 }
 
 fieldset {
-	border: 1px solid pink;
+	border: 1px solid rgb(249, 168, 212);
 	border-radius: 8px;
 }
 
