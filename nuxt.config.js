@@ -38,14 +38,16 @@ export default {
 		'@nuxtjs/style-resources'
 	],
 
+	serverMiddleware: ['~/api/index.js'],
+
 	// Axios module configuration: https://go.nuxtjs.dev/config-axios
 	axios: {
 		proxy: true
 	},
 
-	proxy: {
-		'/api/': { target: 'http://localhost:3001', pathRewrite: { '^/api/': '' } }
-	},
+	// proxy: {
+	// 	'/api/': { target: 'http://localhost:3001', pathRewrite: { '^/api/': '' } }
+	// },
 
 	// PWA module configuration: https://go.nuxtjs.dev/pwa
 	pwa: {

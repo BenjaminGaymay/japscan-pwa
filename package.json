@@ -6,7 +6,6 @@
 		"dev": "nuxt --hostname 0.0.0.0",
 		"build": "nuxt build",
 		"start": "nuxt start --hostname 0.0.0.0",
-		"server": "nodemon server.js",
 		"generate": "nuxt generate"
 	},
 	"dependencies": {

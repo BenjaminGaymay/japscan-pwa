@@ -10,6 +10,8 @@ puppeteer.use(StealthPlugin());
 
 const fs = require('fs');
 
+const app = express();
+
 String.prototype.tryMatch = function (regex, index = 1) {
 	try {
 		return this.toString().match(regex)[index].trim();
@@ -24,12 +26,10 @@ function clearString(string) {
 		.replace(/&#(?:x([\da-f]+)|(\d+));/gi, (_, hex, dec) => String.fromCharCode(dec || +('0x' + hex)));
 }
 
-(async () => {
+async function start() {
 	const browser = await puppeteer.launch({
 		executablePath: '/usr/bin/google-chrome'
 	});
-
-	const app = express();
 
 	app.use(express.static('assets'));
 
@@ -257,6 +257,8 @@ function clearString(string) {
 			}
 		});
 	}, 120000);
+}
 
-	app.listen(3001);
-})();
+start();
+
+module.exports = { path: '/api', handler: app };

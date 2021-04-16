@@ -6,12 +6,18 @@
 			:to="chapter.href"
 		>
 			<div class="chapter-link">
-				<!-- COLUMNS ? -->
-				<span>{{ chapter.name }}</span>
-				<span v-if="chapter.infos" class="px-1 ml-4 shadow rounded-xl text-sm text-gray-800 bg-pink-300">
+				<div class="chapter-name mr-4 overflow-ellipsis overflow-hidden whitespace-nowrap">
+					{{ chapter.name }}
+				</div>
+				<div
+					class="chapter-infos px-1 mr-4 shadow rounded-xl text-sm text-gray-800 bg-pink-300"
+					v-if="chapter.infos"
+				>
 					{{ chapter.infos }}
-				</span>
-				<span v-if="chapter.date" class="float-right text-pink-300">{{ chapter.date }}</span>
+				</div>
+				<div class="text-pink-300 ml-auto whitespace-nowrap">
+					{{ chapter.date }}
+				</div>
 			</div>
 		</NuxtLink>
 
@@ -66,5 +72,27 @@ export default {
 		border-radius: 8px;
 		color: rgb(249, 168, 212);
 	}
+
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+	position: relative;
+	box-sizing: content-box;
+	width: 100%;
+
+	&-name {
+		display: flex;
+		flex-direction: row;
+		justify-content: space-between;
+		position: relative;
+	}
+
+	&-infos {
+		line-height: 1.5rem;
+	}
+}
+
+.chapters {
+	max-width: min(100vw - 2rem, 768px - 2rem);
 }
 </style>

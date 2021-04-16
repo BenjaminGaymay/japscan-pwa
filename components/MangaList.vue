@@ -2,7 +2,7 @@
 	<div class="list px-6">
 		<div class="manga" v-for="manga in mangas" :key="manga.href">
 			<NuxtLink
-				class="manga-name text-2xl text-blue-300"
+				class="manga-name text-xl md:text-2xl text-blue-300"
 				:class="{ 'manga-name-hot': manga.hot }"
 				:to="manga.href"
 			>
