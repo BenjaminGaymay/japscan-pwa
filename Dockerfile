@@ -1,4 +1,4 @@
-FROM alpine:edge
+FROM alpine:3.11
 
 # Installs latest Chromium (89) package.
 RUN apk add --no-cache \
@@ -18,7 +18,8 @@ ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
     PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
 
 # Puppeteer v6.0.0 works with Chromium 89.
-RUN yarn add puppeteer@6.0.0
+# Puppeteer v3.0.0 works with Chromium 81.
+RUN yarn add puppeteer@3.0.4
 
 # Add user so we don't need --no-sandbox.
 RUN addgroup -S pptruser && adduser -S -g pptruser pptruser \
