@@ -50,7 +50,7 @@ export default {
 
 	mounted() {
 		this.$axios
-			.get('/api/manga', {
+			.get('/scans/api/manga', {
 				params: {
 					uri: `/manga/${this.$route.params.manga}`
 				}
@@ -58,7 +58,7 @@ export default {
 			.then(response => {
 				if (response.status === 200 || response.status === 304) {
 					this.infos = response.data.infos;
-					this.infos.img = `/api/${this.infos.img}`;
+					this.infos.img = `/scans/api/${this.infos.img}`;
 					this.chapters = response.data.chapters;
 				}
 			});

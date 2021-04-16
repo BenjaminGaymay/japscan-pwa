@@ -39,7 +39,7 @@ export default {
 			this.selected = day;
 			this.$router.push({ path: '/', query: { page: day } });
 
-			this.$axios.get('/api/', { params: { day } }).then(response => {
+			this.$axios.get('/scans/api/', { params: { day } }).then(response => {
 				if (response.status === 200 || response.status === 304) this.mangas = response.data;
 				this.loading = false;
 			});

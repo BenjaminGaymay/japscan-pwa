@@ -1,14 +1,25 @@
 export default {
+	ssr: false,
+	server: {
+		port: 3333, // default: 3000
+		host: '0.0.0.0', // default: localhost,
+		timing: false
+	},
+
+	router: {
+		base: '/scans'
+	},
+
 	// Global page headers: https://go.nuxtjs.dev/config-head
 	head: {
-		title: 'japscan-app',
+		title: 'Japscan',
 		meta: [
 			{ charset: 'utf-8' },
 			{ name: 'viewport', content: 'width=device-width, initial-scale=1' },
 			{ hid: 'description', name: 'description', content: '' }
 		],
 		link: [
-			{ rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' },
+			{ rel: 'icon', type: 'image/x-icon', href: '/scans/favicon.ico' },
 			{ rel: 'preconnect', href: 'https://fonts.gstatic.com' },
 			{ rel: 'stylesheet', href: 'http://fonts.googleapis.com/css?family=Droid+Sans' }
 		]
@@ -41,13 +52,7 @@ export default {
 	serverMiddleware: ['~/api/index.js'],
 
 	// Axios module configuration: https://go.nuxtjs.dev/config-axios
-	axios: {
-		proxy: true
-	},
-
-	// proxy: {
-	// 	'/api/': { target: 'http://localhost:3001', pathRewrite: { '^/api/': '' } }
-	// },
+	axios: {},
 
 	// PWA module configuration: https://go.nuxtjs.dev/pwa
 	pwa: {

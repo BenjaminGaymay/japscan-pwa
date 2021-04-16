@@ -3,9 +3,9 @@
 	"version": "1.0.0",
 	"private": true,
 	"scripts": {
-		"dev": "nuxt --hostname 0.0.0.0",
+		"dev": "API_PORT=3333 nuxt --hostname 0.0.0.0",
 		"build": "nuxt build",
-		"start": "nuxt start --hostname 0.0.0.0",
+		"start": "API_PORT=3333 nuxt start --hostname 0.0.0.0",
 		"generate": "nuxt generate"
 	},
 	"dependencies": {
@@ -22,10 +22,8 @@
 		"nodemon": "^2.0.7",
 		"nuxt": "^2.15.3",
 		"puppeteer": "^8.0.0",
-		"puppeteer-core": "^8.0.0",
 		"puppeteer-extra": "^3.1.18",
 		"puppeteer-extra-plugin-stealth": "^2.7.6",
-		"request": "^2.88.2",
 		"sass": "^1.32.8",
 		"tunnel-agent": "^0.6.0",
 		"vue2-touch-events": "^3.2.1"

@@ -18,7 +18,7 @@ export default {
 		window.addEventListener('keyup', this.handleKeypress);
 
 		this.$axios
-			.get('/api/page', {
+			.get('/scans/api/page', {
 				params: {
 					uri: `/lecture-en-ligne/${this.$route.params.manga}/${this.$route.params.chapter}/${
 						this.$route.params.page || ''
@@ -27,7 +27,7 @@ export default {
 			})
 			.then(response => {
 				if (response.status === 200 || response.status === 304) {
-					this.img = `/api/${response.data.img}`;
+					this.img = `/scans/api/${response.data.img}`;
 
 					this.next = response.data.next;
 				}

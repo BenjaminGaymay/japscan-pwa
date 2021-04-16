@@ -1,0 +1,11 @@
+.nuxt/
+dist/
+node_modules/
+.editorconfig
+.gitignore
+.prettierrc
+README.md
+a.html
+regexed
+regexed.html
+TODO

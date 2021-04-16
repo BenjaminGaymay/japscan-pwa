@@ -28,7 +28,10 @@ function clearString(string) {
 
 async function start() {
 	const browser = await puppeteer.launch({
-		executablePath: '/usr/bin/google-chrome'
+		// executablePath: '/usr/bin/google-chrome',
+
+		executablePath: '/usr/bin/chromium-browser',
+		args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
 	});
 
 	app.use(express.static('assets'));

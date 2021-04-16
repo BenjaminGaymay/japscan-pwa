@@ -2,32 +2,16 @@
 
 A Progressive Web App to read scan from the japscan website. This can be installed as an application on a mobile device.
 
+The app needs to be run with Docker to ensure the compatibility between puppeteer and the chromium version.
+
 ## Build Setup
 
 ```bash
-# install dependencies
-$ npm install
+# build docker image
+$ docker build -t japscan .
 
-# serve with hot reload at localhost:3000
-$ npm run dev
-
-# build for production and launch server
-$ npm run build
-$ npm run start
-
-# generate static project
-$ npm run generate
+# start server
+$ docker run -p 3333:3333 japscan
 ```
 
-For detailed explanation on how things work, check out [Nuxt.js docs](https://nuxtjs.org).
-
-
-## Start API
-
-```bash
-# install dependencies
-$ npm install
-
-# serve with hot reload at localhost:3001
-$ npm run server
-```
+The app is available by default on [localhost:3333/scans](http://localhost:3333/scans)
