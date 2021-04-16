@@ -1,5 +1,7 @@
 # Japscan PWA
 
+A Progressive Web App to read scan from the japscan website. This can be installed as an application on a mobile device.
+
 ## Build Setup
 
 ```bash
