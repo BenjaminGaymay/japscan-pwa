@@ -31,7 +31,7 @@ async function start() {
 		// executablePath: '/usr/bin/google-chrome',
 
 		executablePath: '/usr/bin/chromium-browser',
-		args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
+		// args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
 	});
 
 	app.use(express.static('assets'));
@@ -188,7 +188,7 @@ async function start() {
 
 	app.get('/page', async (req, res) => {
 		const page = await browser.newPage();
-		pageTimeout = setTimeout(() => (page && !page.isClosed() ? page.close() : () => ({})), 5000);
+		pageTimeout = setTimeout(() => (page && !page.isClosed() ? page.close() : () => ({})), 15000);
 		let sended = false;
 
 		let [, , manga, chapter, nb] = req.query.uri.split('/');
@@ -196,16 +196,16 @@ async function start() {
 
 		nb = !nb ? 1 : parseInt(nb);
 
-		await page.setRequestInterception(true);
-		page.on('request', request => {
-			const url = request.url();
-			const filters = ['japscan.se', 'cdnjs.cloudflare.com', 'cdn.statically.io', 'ajax.cloudflare.com'];
+		// await page.setRequestInterception(true);
+		//page.on('request', request => {
+		//	const url = request.url();
+		//	const filters = ['japscan.se', 'cdnjs.cloudflare.com', 'cdn.statically.io', 'ajax.cloudflare.com'];
 
-			const shouldPass = filters.some(urlPart => url.includes(urlPart));
+		//	const shouldPass = filters.some(urlPart => url.includes(urlPart));
 
-			if (shouldPass) request.continue();
-			else request.abort();
-		});
+		//	if (shouldPass) request.continue();
+		//	else request.abort();
+		//});
 
 		page.on('response', async response => {
 			clearTimeout(pageTimeout);
@@ -241,7 +241,7 @@ async function start() {
 				}
 			}
 
-			pageTimeout = setTimeout(() => (page && !page.isClosed() ? page.close() : () => ({})), 5000);
+			pageTimeout = setTimeout(() => (page && !page.isClosed() ? page.close() : () => ({})), 15000);
 		});
 
 		await page.goto(`https://japscan.se${req.query.uri}`);
