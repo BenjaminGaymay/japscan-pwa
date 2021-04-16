@@ -6,11 +6,11 @@
 			:to="chapter.href"
 		>
 			<div class="chapter-link">
-				<div class="chapter-name mr-4 overflow-ellipsis overflow-hidden whitespace-nowrap">
+				<div class="mr-4 overflow-ellipsis overflow-hidden whitespace-nowrap">
 					{{ chapter.name }}
 				</div>
 				<div
-					class="chapter-infos px-1 mr-4 shadow rounded-xl text-sm text-gray-800 bg-pink-300"
+					class="chapter-link-infos px-1 mr-4 shadow rounded-xl text-sm text-gray-800 bg-pink-300"
 					v-if="chapter.infos"
 				>
 					{{ chapter.infos }}
@@ -66,6 +66,10 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.chapters {
+	max-width: min(100vw - 2rem, 768px - 2rem);
+}
+
 .chapter-link {
 	color: white;
 	&:hover {
@@ -80,19 +84,8 @@ export default {
 	box-sizing: content-box;
 	width: 100%;
 
-	&-name {
-		display: flex;
-		flex-direction: row;
-		justify-content: space-between;
-		position: relative;
-	}
-
 	&-infos {
 		line-height: 1.5rem;
 	}
-}
-
-.chapters {
-	max-width: min(100vw - 2rem, 768px - 2rem);
 }
 </style>
