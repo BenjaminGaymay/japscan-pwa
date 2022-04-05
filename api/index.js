@@ -28,9 +28,9 @@ function clearString(string) {
 
 async function start() {
 	const browser = await puppeteer.launch({
-		// executablePath: '/usr/bin/google-chrome',
+		executablePath: '/usr/bin/google-chrome'
 
-		executablePath: '/usr/bin/chromium-browser',
+		// executablePath: '/usr/bin/chromium-browser',
 		// args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
 	});
 
@@ -196,21 +196,27 @@ async function start() {
 
 		nb = !nb ? 1 : parseInt(nb);
 
-		// await page.setRequestInterception(true);
-		//page.on('request', request => {
-		//	const url = request.url();
-		//	const filters = ['japscan.se', 'cdnjs.cloudflare.com', 'cdn.statically.io', 'ajax.cloudflare.com'];
+		await page.setRequestInterception(true);
+		page.on('request', request => {
+			const url = request.url();
+			const filters = [
+				'japscan.ws',
+				'japscan.se',
+				'cdnjs.cloudflare.com',
+				'cdn.statically.io',
+				'ajax.cloudflare.com'
+			];
 
-		//	const shouldPass = filters.some(urlPart => url.includes(urlPart));
+			const shouldPass = filters.some(urlPart => url.includes(urlPart));
 
-		//	if (shouldPass) request.continue();
-		//	else request.abort();
-		//});
+			if (shouldPass) request.continue();
+			else request.abort();
+		});
 
 		page.on('response', async response => {
 			clearTimeout(pageTimeout);
 
-			if (response.url().match(/^https:\/\/www.japscan\.se/) && response.url().includes(req.query.uri)) {
+			if (response.url().match(/^https:\/\/www.japscan\.\w+/) && response.url().includes(req.query.uri)) {
 				next = (await response.text()).tryMatch(/data-next-link=\"(.+?)\"/);
 				const files = fs.readdirSync('assets/img');
 
@@ -222,7 +228,7 @@ async function start() {
 				}
 			}
 
-			if (response.url().match(/https:\/\/cdn\.statically\.io\/img\/c\.japscan\.se.+/)) {
+			if (response.url().match(/https:\/\/cdn\.statically\.io\/img\/c\.japscan\..+/)) {
 				const matches = /.*\.(jpg|png|svg|gif)$/.exec(response.url());
 				if (matches && matches.length === 2) {
 					const extension = matches[1];
