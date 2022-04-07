@@ -14,4 +14,4 @@ $ docker build -t japscan .
 $ docker run -p 3333:3333 japscan
 ```
 
-The app is available by default on [localhost:3333/scans](http://localhost:3333/scans)
+The app is available by default on [localhost:3333](http://localhost:3333/)

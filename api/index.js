@@ -9,6 +9,7 @@ const StealthPlugin = require('puppeteer-extra-plugin-stealth');
 puppeteer.use(StealthPlugin());
 
 const fs = require('fs');
+const jimp = require('jimp');
 
 const app = express();
 
@@ -26,9 +27,15 @@ function clearString(string) {
 		.replace(/&#(?:x([\da-f]+)|(\d+));/gi, (_, hex, dec) => String.fromCharCode(dec || +('0x' + hex)));
 }
 
+const cache = {
+	timestamp: null,
+	page: null
+};
+
 async function start() {
 	const browser = await puppeteer.launch({
 		executablePath: '/usr/bin/google-chrome'
+		// headless: false
 
 		// executablePath: '/usr/bin/chromium-browser',
 		// args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
@@ -90,18 +97,29 @@ async function start() {
 		};
 
 		try {
-			const response = await cloudscraper.get('https://japscan.se');
-			const uncluttered = clearString(response);
+			let uncluttered;
+
+			if (!cache.timestamp || new Date().getTime() - cache.timestamp > 300000) {
+				const response = await cloudscraper.get('https://japscan.se');
+				uncluttered = clearString(response);
+
+				cache.timestamp = new Date().getTime();
+				cache.page = uncluttered;
+			} else uncluttered = cache.page;
 
 			let choosenDay;
 
 			try {
 				choosenDay = uncluttered.match(req.query.day ? days[req.query.day][0] : days[0][0])[1];
+				fs.writeFileSync('ok.html', uncluttered);
 			} catch {
-				console.log(req.query.day ? days[req.query.day][1] : days[0][1]);
-				fs.writeFileSync('a.html', uncluttered);
+				cache.timestamp = null;
+				cache.page = null;
+
 				choosenDay = uncluttered.match(req.query.day ? days[req.query.day][1] : days[0][1])[1];
-				fs.writeFileSync('regexed', choosenDay);
+				// console.log(req.query.day ? days[req.query.day][1] : days[0][1]);
+				// fs.writeFileSync('error.html', uncluttered);
+				// fs.writeFileSync('regexed', choosenDay);
 			}
 
 			const mangaOfTheDay = [...choosenDay.match(/<h3 class=\"text-truncate.*?>.*?<\/div>/gm)];
@@ -110,7 +128,9 @@ async function start() {
 				name: e.tryMatch(/href=\"\/manga\/.+?\">(.*?)<\/a>/),
 				hot: e.match(/<span class=\"badge badge-pill badge-danger align-text-top\">Hot<\/span>/) ? true : false,
 				chapters: [
-					...e.matchAll(/href=\"(\/lecture-en-ligne\/.+?)\">(.*?)<\/a>.*?((<span.*?>(.+?)<\/span>)|(<\/p>))/g)
+					...e.matchAll(
+						/href=\"(\/lecture-en-ligne\/.+?)\">(.*?)<\/a>.*?((<span.*?>(.+?)<\/span>)|(<\/p>)|(<\/div))/g
+					)
 				].map(c => ({
 					href: c[1],
 					name: c[2],
@@ -120,6 +140,9 @@ async function start() {
 
 			res.send(parsed);
 		} catch (error) {
+			cache.timestamp = null;
+			cache.page = null;
+
 			console.log(error);
 			res.send(error);
 		}
@@ -145,7 +168,7 @@ async function start() {
 
 			const chapters = [
 				...uncluttered.matchAll(
-					/<div class=\"chapters_list text-truncate\">.*?<span.*?>(.+?)<.*?href=\"(.+?)\".*?>(.+?)((<span.*?>(.+?)<\/span>)|(<\/a>))/g
+					/<div class=\"chapters_list.*?\">.*?<span.*?>(.+?)<.*?href=\"(.+?)\".*?>(.+?)((<span.*?>(.+?)<\/span>)|(<\/a>))/g
 				)
 			].map(c => ({
 				date: c[1].trim(),
@@ -153,6 +176,8 @@ async function start() {
 				name: c[3].trim(),
 				infos: c[6] || ''
 			}));
+
+			if (chapters.length === 0) fs.writeFileSync('error.html', uncluttered);
 
 			const files = fs.readdirSync('assets/img');
 			const imgName = imgURL.split('/mangas/')[1];
@@ -234,7 +259,10 @@ async function start() {
 					const extension = matches[1];
 					const buffer = await response.buffer();
 
-					fs.writeFileSync(`assets/img/${manga}-${chapter}-${nb}.${extension}`, buffer, 'base64');
+					const img = await jimp.read(buffer);
+					img.resize(800, jimp.AUTO).quality(60).write(`assets/img/${manga}-${chapter}-${nb}.${extension}`);
+
+					// fs.writeFileSync(`assets/img/${manga}-${chapter}-${nb}.${extension}`, buffer, 'base64');
 
 					if (!sended) {
 						try {

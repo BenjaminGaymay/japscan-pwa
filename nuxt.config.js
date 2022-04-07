@@ -6,9 +6,9 @@ export default {
 		timing: false
 	},
 
-	router: {
-		base: '/scans'
-	},
+	// router: {
+	// 	base: '/scans'
+	// },
 
 	// Global page headers: https://go.nuxtjs.dev/config-head
 	head: {
@@ -19,7 +19,7 @@ export default {
 			{ hid: 'description', name: 'description', content: '' }
 		],
 		link: [
-			{ rel: 'icon', type: 'image/x-icon', href: '/scans/favicon.ico' },
+			{ rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' },
 			{ rel: 'preconnect', href: 'https://fonts.gstatic.com' },
 			{ rel: 'stylesheet', href: 'http://fonts.googleapis.com/css?family=Droid+Sans' }
 		]
