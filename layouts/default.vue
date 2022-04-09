@@ -1,5 +1,5 @@
 <template>
-	<div v-touch:swipe.left="() => toggleMenu(false)" v-touch:swipe.right="() => toggleMenu(true)">
+	<div v-touch:swipe.left="() => toggleMenu(false)" v-touch:swipe.right="() => toggleMenu(true)" class="min-h-screen">
 		<div v-if="big">
 			<Menu />
 		</div>

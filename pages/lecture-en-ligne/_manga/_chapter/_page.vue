@@ -1,5 +1,5 @@
 <template>
-	<div class="m-auto max-w-screen-md text-white pt-6">
+	<div class="mx-auto flex h-screen max-w-screen-md items-center justify-center text-white">
 		<Loader v-if="loading" />
 
 		<NuxtLink v-else-if="next && img" :to="next">
@@ -17,23 +17,30 @@ export default {
 	mounted() {
 		window.addEventListener('keyup', this.handleKeypress);
 
-		this.$axios
-			.get('/api/page', {
-				params: {
-					uri: `/lecture-en-ligne/${this.$route.params.manga}/${this.$route.params.chapter}/${
-						this.$route.params.page || ''
-					}`
-				}
-			})
-			.then(response => {
-				if (response.status === 200 || response.status === 304) {
-					this.img = `/api/${response.data.img}`;
+		const uri = `/lecture-en-ligne/${this.$route.params.manga}/${this.$route.params.chapter}/${
+			this.$route.params.page || ''
+		}`;
 
-					this.next = response.data.next;
-				}
+		this.$axios.get('/api/page', { params: { uri } }).then(response => {
+			if (response.status === 200 || response.status === 304) {
+				this.img = `/api/${response.data.img}`;
 
-				this.loading = false;
-			});
+				this.next = response.data.next;
+				const chapter = response.data.chapterName;
+
+				localStorage.setItem(
+					this.$route.params.manga,
+					JSON.stringify({
+						uri,
+						date: new Date(),
+						chapter,
+						page: this.$route.params.page || 1
+					})
+				);
+			}
+
+			this.loading = false;
+		});
 	},
 
 	beforeDestroy() {

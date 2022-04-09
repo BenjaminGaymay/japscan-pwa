@@ -1,13 +1,12 @@
 <template>
-	<div class="text-white select-none">
+	<div class="select-none text-white">
 		<div v-if="open" class="page fixed" @click="open = !open"></div>
 
 		<div class="menu fixed" :class="{ 'menu-visible': open }">
 			<div
-				class="menu-burger text-5xl cursor-pointer mt-2 ml-2"
+				class="menu-burger mt-2 ml-2 cursor-pointer text-5xl"
 				:class="{ 'menu-burger-open': open }"
-				@click="open = !open"
-			>
+				@click="open = !open">
 				<svg
 					version="1.1"
 					xmlns="http://www.w3.org/2000/svg"
@@ -17,28 +16,52 @@
 					width="50px"
 					height="50px"
 					viewBox="0 0 124 124"
-					xml:space="preserve"
-				>
+					xml:space="preserve">
 					<path d="M112,6H12C5.4,6,0,11.4,0,18s5.4,12,12,12h100c6.6,0,12-5.4,12-12S118.6,6,112,6z" />
 					<path
-						d="M112,50H12C5.4,50,0,55.4,0,62c0,6.6,5.4,12,12,12h100c6.6,0,12-5.4,12-12C124,55.4,118.6,50,112,50z"
-					/>
+						d="M112,50H12C5.4,50,0,55.4,0,62c0,6.6,5.4,12,12,12h100c6.6,0,12-5.4,12-12C124,55.4,118.6,50,112,50z" />
 					<path d="M112,94H12c-6.6,0-12,5.4-12,12s5.4,12,12,12h100c6.6,0,12-5.4,12-12S118.6,94,112,94z" />
 				</svg>
 			</div>
 
 			<div class="menu-infos mt-6" v-if="open">
+				<div class="search relative mb-6">
+					<input
+						class="search-input mx-3 rounded-lg px-2 py-1"
+						type="text"
+						placeholder="Rechercher un manga"
+						@input="handleSearch"
+						@click="handleSearch($event, 0)" />
+
+					<div
+						v-if="searchResults"
+						class="search-box absolute top-12 left-3 overflow-auto rounded-lg px-2 py-1">
+						<div v-if="searchResults.length === 0" class="mx-auto text-center">Aucun résultat</div>
+
+						<div v-if="link && link.url && link.name" v-for="link in searchResults">
+							<NuxtLink :to="link.url" @click.native="open = false">
+								<div class="link mx-3 overflow-hidden overflow-ellipsis whitespace-nowrap">
+									<span>-</span>{{ link.name }}
+								</div>
+							</NuxtLink>
+						</div>
+					</div>
+				</div>
+
 				<NuxtLink :to="{ path: '/', query: { page: 0 }, force: true }" @click.native="open = false">
-					<div class="mx-3 link"><span>―</span> Sorties du jour</div>
+					<div class="link mx-3"><span>―</span> Sorties du jour</div>
 				</NuxtLink>
 
 				<NuxtLink :to="`/manga/${mangaPage}`" v-if="mangaPage" @click.native="open = false">
-					<div class="mx-3 link mt-2"><span>―</span> Fiche du manga</div>
+					<div class="link mx-3 mt-2"><span>―</span> Fiche du manga</div>
 				</NuxtLink>
 
+				<div class="link absolute bottom-16 mx-3">
+					<NuxtLink :to="`/historique`" @click.native="open = false"> <span>―</span> Historique </NuxtLink>
+				</div>
+
 				<div
-					class="menu-infos-nav absolute bottom-6 flex text-2xl justify-between w-full px-3 gap-8 align-middle"
-				>
+					class="menu-infos-nav absolute bottom-6 flex w-full justify-between gap-8 px-3 align-middle text-2xl">
 					<div class="flex-grow">
 						<svg
 							version="1.1"
@@ -50,8 +73,7 @@
 							viewBox="0 0 438.542 438.542"
 							xml:space="preserve"
 							@click="refresh"
-							class="cursor-pointer refresh"
-						>
+							class="refresh cursor-pointer">
 							<path
 								d="M427.408,19.697c-7.803-3.23-14.463-1.902-19.986,3.999l-37.116,36.834C349.94,41.305,326.672,26.412,300.5,15.848
 		C274.328,5.285,247.251,0.003,219.271,0.003c-29.692,0-58.052,5.808-85.08,17.417c-27.03,11.61-50.347,27.215-69.951,46.82
@@ -64,8 +86,7 @@
 		c0-19.795,3.858-38.691,11.563-56.674c7.707-17.985,18.127-33.547,31.261-46.678c13.135-13.134,28.693-23.555,46.682-31.265
 		c17.983-7.707,36.879-11.563,56.671-11.563c38.259,0,71.475,13.039,99.646,39.116l-39.409,39.394
 		c-5.903,5.711-7.231,12.279-4.001,19.701c3.241,7.614,8.856,11.42,16.854,11.42h127.906c4.949,0,9.23-1.807,12.848-5.424
-		c3.613-3.616,5.42-7.898,5.42-12.847V36.55C438.542,28.558,434.84,22.943,427.408,19.697z"
-							/>
+		c3.613-3.616,5.42-7.898,5.42-12.847V36.55C438.542,28.558,434.84,22.943,427.408,19.697z" />
 						</svg>
 					</div>
 					<div>
@@ -79,16 +100,14 @@
 							viewBox="0 0 492 492"
 							xml:space="preserve"
 							@click="previous"
-							class="cursor-pointer"
-						>
+							class="cursor-pointer">
 							<path
 								d="M464.344,207.418l0.768,0.168H135.888l103.496-103.724c5.068-5.064,7.848-11.924,7.848-19.124
 			c0-7.2-2.78-14.012-7.848-19.088L223.28,49.538c-5.064-5.064-11.812-7.864-19.008-7.864c-7.2,0-13.952,2.78-19.016,7.844
 			L7.844,226.914C2.76,231.998-0.02,238.77,0,245.974c-0.02,7.244,2.76,14.02,7.844,19.096l177.412,177.412
 			c5.064,5.06,11.812,7.844,19.016,7.844c7.196,0,13.944-2.788,19.008-7.844l16.104-16.112c5.068-5.056,7.848-11.808,7.848-19.008
 			c0-7.196-2.78-13.592-7.848-18.652L134.72,284.406h329.992c14.828,0,27.288-12.78,27.288-27.6v-22.788
-			C492,219.198,479.172,207.418,464.344,207.418z"
-							/>
+			C492,219.198,479.172,207.418,464.344,207.418z" />
 						</svg>
 					</div>
 					<div>
@@ -102,15 +121,13 @@
 							viewBox="0 0 492.004 492.004"
 							xml:space="preserve"
 							@click="next"
-							class="cursor-pointer"
-						>
+							class="cursor-pointer">
 							<path
 								d="M484.14,226.886L306.46,49.202c-5.072-5.072-11.832-7.856-19.04-7.856c-7.216,0-13.972,2.788-19.044,7.856l-16.132,16.136
 			c-5.068,5.064-7.86,11.828-7.86,19.04c0,7.208,2.792,14.2,7.86,19.264L355.9,207.526H26.58C11.732,207.526,0,219.15,0,234.002
 			v22.812c0,14.852,11.732,27.648,26.58,27.648h330.496L252.248,388.926c-5.068,5.072-7.86,11.652-7.86,18.864
 			c0,7.204,2.792,13.88,7.86,18.948l16.132,16.084c5.072,5.072,11.828,7.836,19.044,7.836c7.208,0,13.968-2.8,19.04-7.872
-			l177.68-177.68c5.084-5.088,7.88-11.88,7.86-19.1C492.02,238.762,489.228,231.966,484.14,226.886z"
-							/>
+			l177.68-177.68c5.084-5.088,7.88-11.88,7.86-19.1C492.02,238.762,489.228,231.966,484.14,226.886z" />
 						</svg>
 					</div>
 				</div>
@@ -129,12 +146,25 @@ export default {
 	},
 
 	data() {
-		return { open: this.value };
+		return {
+			open: this.value,
+			searchTimeout: null,
+			searchResults: null
+		};
+	},
+
+	created() {
+		if (process.client) window.document.addEventListener('click', this.clickOutside);
+	},
+
+	beforeDestroy() {
+		if (process.client) window.document.removeEventListener('click', this.clickOutside);
 	},
 
 	watch: {
 		open(value) {
 			this.$emit('input', value);
+			this.searchResults = null;
 		}
 	},
 
@@ -160,6 +190,23 @@ export default {
 
 		next() {
 			this.$router.go(1);
+		},
+
+		handleSearch(event, timeout = 200) {
+			const query = event.target.value.replace(/^\s+|\s+$/g, '');
+
+			if (!query || query === '') return (this.searchResults = null);
+			if (this.searchTimeout) clearTimeout(this.searchTimeout);
+
+			this.searchTimeout = setTimeout(async () => {
+				const response = await this.$axios.get(`/api/search/${query}`);
+
+				if (response) this.searchResults = response.data;
+			}, timeout);
+		},
+
+		clickOutside(event) {
+			if (!event.target.closest('.search')) this.searchResults = null;
 		}
 	}
 };
@@ -175,6 +222,43 @@ export default {
 	height: 100%;
 
 	background-color: rgba($color: #000000, $alpha: 0.5);
+}
+
+.search {
+	&-input {
+		background-color: rgb(63, 63, 63);
+		border-right: 2px solid rgb(249, 168, 212);
+		border-left: 2px solid rgb(249, 168, 212);
+
+		width: calc(100% - 1.5rem);
+	}
+
+	&-box {
+		width: calc(100% - 1.5rem);
+
+		max-height: 60vh;
+
+		background-color: rgb(63, 63, 63);
+		border-top: 2px solid rgb(249, 168, 212);
+		border-bottom: 2px solid rgb(249, 168, 212);
+	}
+}
+
+.link {
+	padding: 5px 0;
+
+	span {
+		margin-right: 0.75rem;
+		color: rgb(249, 168, 212);
+	}
+
+	&:hover {
+		color: rgb(147, 197, 253);
+
+		span {
+			margin-right: 1rem;
+		}
+	}
 }
 
 .menu {
@@ -218,23 +302,6 @@ export default {
 	}
 
 	&-infos {
-		.link {
-			padding: 5px 0;
-
-			span {
-				margin-right: 0.75rem;
-				color: rgb(249, 168, 212);
-			}
-
-			&:hover {
-				color: rgb(147, 197, 253);
-
-				span {
-					margin-right: 1rem;
-				}
-			}
-		}
-
 		&-nav {
 			div {
 				svg {

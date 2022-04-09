@@ -9,36 +9,29 @@
 		"generate": "nuxt generate"
 	},
 	"dependencies": {
-		"@nuxtjs/axios": "^5.13.1",
 		"@nuxtjs/pwa": "^3.3.5",
-		"child-process": "^1.0.2",
-		"cloudflare-scraper": "^1.0.7",
+		"@nuxtjs/axios": "^5.13.6",
+		"@nuxtjs/tailwindcss": "^4.2.1",
+		"nuxt": "^2.15.8",
+		"core-js": "^3.21.1",
+
+		"sass": "^1.49.0",
+		"sass-loader": "^10.1.1",
+		"postcss": "^8.3.5",
+
+		"express": "^4.17.3",
+		"moment": "^2.29.2",
+
 		"cloudscraper": "^4.6.0",
-		"core-js": "^3.9.1",
-		"express": "^4.17.1",
-		"forever-agent": "^0.6.1",
+		"puppeteer": "^13.5.2",
+		"puppeteer-extra": "^3.2.3",
+		"puppeteer-extra-plugin-stealth": "^2.9.0",
+
 		"jimp": "^0.16.1",
-		"moment": "^2.29.1",
-		"momentjs": "^2.0.0",
-		"nodemon": "^2.0.7",
-		"nuxt": "^2.15.3",
-		"puppeteer": "^3.0.4",
-		"puppeteer-extra": "^3.1.18",
-		"puppeteer-extra-plugin-stealth": "^2.7.6",
-		"sass": "^1.32.8",
-		"tunnel-agent": "^0.6.0",
-		"vue2-touch-events": "^3.2.1"
+		"vue2-touch-events": "^3.2.2"
 	},
 	"devDependencies": {
-		"@nuxtjs/style-resources": "^1.0.0",
-		"@nuxtjs/tailwindcss": "^4.0.1",
-		"eslint-config-prettier": "^8.1.0",
-		"eslint-plugin-prettier": "^3.3.1",
-		"node-sass": "^5.0.0",
-		"postcss": "^8.2.8",
-		"prettier": "^2.2.1",
-		"pug": "^3.0.2",
-		"pug-plain-loader": "^1.1.0",
-		"sass-loader": "^10.1.1"
+		"prettier": "^2.6.2",
+		"prettier-plugin-tailwindcss": "^0.1.8"
 	}
 }

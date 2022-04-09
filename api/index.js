@@ -218,6 +218,7 @@ async function start() {
 
 		let [, , manga, chapter, nb] = req.query.uri.split('/');
 		let next = null;
+		let chapterName = null;
 
 		nb = !nb ? 1 : parseInt(nb);
 
@@ -242,13 +243,16 @@ async function start() {
 			clearTimeout(pageTimeout);
 
 			if (response.url().match(/^https:\/\/www.japscan\.\w+/) && response.url().includes(req.query.uri)) {
-				next = (await response.text()).tryMatch(/data-next-link=\"(.+?)\"/);
+				const text = await response.text();
+				next = text.tryMatch(/data-next-link=\"(.+?)\"/);
+				chapterName = text.tryMatch(/<h1.+?>(.+?)<\/h1/);
+
 				const files = fs.readdirSync('assets/img');
 
 				for (let file of files) {
 					if (file.startsWith(`${manga}-${chapter}-${nb}.`) && !sended) {
 						sended = true;
-						res.send({ img: `img/${file}`, next });
+						res.send({ img: `img/${file}`, next, chapterName });
 					}
 				}
 			}
@@ -267,7 +271,7 @@ async function start() {
 					if (!sended) {
 						try {
 							sended = true;
-							res.send({ img: `img/${manga}-${chapter}-${nb}.${extension}`, next });
+							res.send({ img: `img/${manga}-${chapter}-${nb}.${extension}`, next, chapterName });
 						} catch {}
 					}
 
@@ -294,6 +298,30 @@ async function start() {
 			}
 		});
 	}, 120000);
+
+	app.get('/search/:query', async (req, res) => {
+		const query = req.params.query.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+		console.log(query);
+
+		try {
+			const params = new URLSearchParams();
+			params.append('search', query);
+
+			const response = await fetch('https://www.japscan.ws/live-search/', {
+				method: 'POST',
+				headers: { 'X-Requested-With': 'XMLHttpRequest' },
+				body: params
+			});
+
+			const data = await response.json();
+
+			return res.send(data);
+		} catch (err) {
+			console.log(`${err.name}: ${err.message}`);
+		}
+
+		res.sendStatus(200);
+	});
 }
 
 start();
