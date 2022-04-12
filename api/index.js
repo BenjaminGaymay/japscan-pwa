@@ -10,6 +10,7 @@ puppeteer.use(StealthPlugin());
 
 const fs = require('fs');
 const jimp = require('jimp');
+const { resolve } = require('path');
 
 const app = express();
 
@@ -33,13 +34,13 @@ const cache = {
 };
 
 async function start() {
-	const browser = await puppeteer.launch({
-		executablePath: '/usr/bin/google-chrome'
-		// headless: false
+	// const browser = await puppeteer.launch({
+	// 	executablePath: '/usr/bin/google-chrome'
+	// headless: false
 
-		// executablePath: '/usr/bin/chromium-browser',
-		// args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
-	});
+	// executablePath: '/usr/bin/chromium-browser',
+	// args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
+	// });
 
 	app.use(express.static('assets'));
 
@@ -166,16 +167,19 @@ async function start() {
 				/<p class=\"list-group-item list-group-item-primary text-justify\">(.+?)<\/p>/
 			);
 
-			const chapters = [
-				...uncluttered.matchAll(
-					/<div class=\"chapters_list.*?\">.*?<span.*?>(.+?)<.*?href=\"(.+?)\".*?>(.+?)((<span.*?>(.+?)<\/span>)|(<\/a>))/g
-				)
-			].map(c => ({
-				date: c[1].trim(),
-				href: c[2].trim(),
-				name: c[3].trim(),
-				infos: c[6] || ''
-			}));
+			// /<div class=\"chapters_list.*?\">.*?<span.*?>(.+?)<.*?href=\"(.+?)\".*?>(.+?)((<span.*?>(.+?)<\/span>)|(<\/a>))/g
+			const chapters = [...uncluttered.matchAll(/<div class=\"chapters_list.*?\">(.+?)<\/div>/g)].map(c => {
+				const date = c[0].match(/<span class=\"float-right\">(.+?)<\/span>/);
+				const [, href, name] = c[0].match(/<a.*?href=\"(.+?)\".*?>(.+?)<\/a>/);
+				const infos = name.match(/<span.*?>(.+?)<\/span>/);
+
+				return {
+					href: href.trim(),
+					name: name.split('<span')[0].trim(),
+					date: date ? date[1].trim() : '',
+					infos: infos ? infos[1] : ''
+				};
+			});
 
 			if (chapters.length === 0) fs.writeFileSync('error.html', uncluttered);
 
@@ -212,8 +216,16 @@ async function start() {
 	});
 
 	app.get('/page', async (req, res) => {
+		const browser = await puppeteer.launch({
+			executablePath: '/usr/bin/google-chrome'
+			// headless: false
+
+			// executablePath: '/usr/bin/chromium-browser',
+			// args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
+		});
+
 		const page = await browser.newPage();
-		pageTimeout = setTimeout(() => (page && !page.isClosed() ? page.close() : () => ({})), 15000);
+		browserTimeout = setTimeout(() => (browser ? browser.close() : () => ({})), 15000);
 		let sended = false;
 
 		let [, , manga, chapter, nb] = req.query.uri.split('/');
@@ -240,7 +252,7 @@ async function start() {
 		});
 
 		page.on('response', async response => {
-			clearTimeout(pageTimeout);
+			clearTimeout(browserTimeout);
 
 			if (response.url().match(/^https:\/\/www.japscan\.\w+/) && response.url().includes(req.query.uri)) {
 				const text = await response.text();
@@ -253,6 +265,7 @@ async function start() {
 					if (file.startsWith(`${manga}-${chapter}-${nb}.`) && !sended) {
 						sended = true;
 						res.send({ img: `img/${file}`, next, chapterName });
+						// send + tot (mais il faut recuperer le next)
 					}
 				}
 			}
@@ -279,7 +292,7 @@ async function start() {
 				}
 			}
 
-			pageTimeout = setTimeout(() => (page && !page.isClosed() ? page.close() : () => ({})), 15000);
+			browserTimeout = setTimeout(() => (browser ? browser.close() : () => ({})), 15000);
 		});
 
 		await page.goto(`https://japscan.se${req.query.uri}`);
@@ -301,7 +314,6 @@ async function start() {
 
 	app.get('/search/:query', async (req, res) => {
 		const query = req.params.query.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-		console.log(query);
 
 		try {
 			const params = new URLSearchParams();
@@ -319,6 +331,97 @@ async function start() {
 		} catch (err) {
 			console.log(`${err.name}: ${err.message}`);
 		}
+
+		res.sendStatus(200);
+	});
+
+	app.get('/dl/chapter', async (req, res) => {
+		const browser = await puppeteer.launch({ executablePath: '/usr/bin/google-chrome' });
+
+		const [, , manga, chapter] = req.query.uri.split('/');
+		const pages = [{ uri: req.query.uri }];
+
+		const page = await browser.newPage();
+		await page.setRequestInterception(true);
+
+		page.on('request', request => {
+			const url = request.url();
+			const filters = ['japscan.ws', 'japscan.se', 'cdnjs.cloudflare.com', 'ajax.cloudflare.com'];
+
+			const shouldPass = filters.some(urlPart => url.includes(urlPart));
+
+			if (shouldPass) request.continue();
+			else request.abort();
+		});
+
+		const getURIs = new Promise(resolve => {
+			page.on('response', async response => {
+				if (response.url().match(/^https:\/\/www.japscan\.\w+/) && response.url().includes(req.query.uri)) {
+					const text = await response.text();
+					next = text.tryMatch(/data-next-link=\"(.+?)\"/);
+					chapterName = text.tryMatch(/<h1.+?>(.+?)<\/h1/);
+
+					if (next.split(manga)[1].split('/')[1] != chapter) return resolve();
+
+					pages.push({ uri: next });
+					page.goto(`https://japscan.se${next}`);
+				}
+			});
+		});
+
+		await page.goto(`https://japscan.se${req.query.uri}`);
+		await getURIs;
+
+		await page.close();
+
+		const iPage = await browser.newPage();
+		await iPage.setRequestInterception(true);
+
+		let index = 0;
+
+		iPage.on('request', request => {
+			const url = request.url();
+			const filters = [
+				'japscan.ws',
+				'japscan.se',
+				'cdnjs.cloudflare.com',
+				'cdn.statically.io',
+				'ajax.cloudflare.com'
+			];
+
+			const shouldPass = filters.some(urlPart => url.includes(urlPart));
+
+			if (shouldPass) request.continue();
+			else request.abort();
+		});
+
+		const getImgs = new Promise(resolve => {
+			iPage.on('response', async response => {
+				if (response.url().match(/https:\/\/cdn\.statically\.io\/img\/c\.japscan\..+/)) {
+					const matches = /.*\.(jpg|png|svg|gif)$/.exec(response.url());
+					if (matches && matches.length === 2) {
+						const extension = matches[1];
+						const buffer = await response.buffer();
+
+						const img = await jimp.read(buffer);
+						img.resize(800, jimp.AUTO)
+							.quality(60)
+							.write(`assets/img/${manga}-${chapter}-${index + 1}.${extension}`);
+
+						pages[index].img = `assets/img/${manga}-${chapter}-${index + 1}.${extension}`;
+						index += 1;
+
+						if (index < pages.length) iPage.goto(`https://japscan.se${pages[index].uri}`);
+						else return resolve();
+					}
+				}
+			});
+		});
+
+		await iPage.goto(`https://japscan.se${pages[index].uri}`);
+		await getImgs;
+
+		browser.close();
 
 		res.sendStatus(200);
 	});

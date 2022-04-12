@@ -25,14 +25,14 @@
 		</div>
 
 		<fieldset class="my-6 mx-1" v-if="infos.synopsis">
-			<legend class="ml-3 text-pink-300 px-1">Synopsis</legend>
-			<p class="text-sm px-3 py-1 text-justify">
+			<legend class="ml-3 px-1 text-pink-300">Synopsis</legend>
+			<p class="px-3 py-1 text-justify text-sm">
 				{{ infos.synopsis }}
 			</p>
 		</fieldset>
 
 		<fieldset class="chapters-list my-6 mx-1" v-if="chapters">
-			<legend class="ml-3 text-blue-300 px-1">Chapitres</legend>
+			<legend class="ml-3 px-1 text-blue-300">Chapitres</legend>
 			<p class="px-3 py-1">
 				<ChapterLinks :chapters="chapters" />
 			</p>
@@ -40,10 +40,16 @@
 
 		<ScrollToTop />
 	</div>
+
+	<Loader v-else />
 </template>
 
 <script>
+import Loader from '../../components/Loader.vue';
+
 export default {
+	components: { Loader },
+
 	data() {
 		return { infos: null, chapters: [] };
 	},

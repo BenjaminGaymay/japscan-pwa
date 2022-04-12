@@ -1,23 +1,27 @@
 <template>
 	<div class="chapters">
-		<NuxtLink
+		<div
 			v-for="chapter in max && little ? chapters.slice(0, max) : chapters"
 			:key="chapter.href"
-			:to="chapter.href">
-			<div class="chapter-link">
-				<div class="mr-4 overflow-hidden overflow-ellipsis whitespace-nowrap capitalize">
+			class="chapter-link">
+			<NuxtLink :to="chapter.href">
+				<div class="chapter-link-item mr-4 overflow-hidden overflow-ellipsis whitespace-nowrap capitalize">
 					{{ chapter.name }}
 				</div>
-				<div
-					class="chapter-link-infos mr-4 rounded-xl bg-pink-300 px-1 text-sm text-gray-800 shadow"
-					v-if="chapter.infos">
-					{{ chapter.infos }}
-				</div>
-				<div class="ml-auto whitespace-nowrap text-pink-300" v-if="chapter.date">
-					{{ getDateInFrench(chapter.date) }}
-				</div>
+			</NuxtLink>
+
+			<div
+				class="chapter-link-infos mr-4 rounded-xl bg-pink-300 px-1 text-sm text-gray-800 shadow"
+				v-if="chapter.infos">
+				{{ chapter.infos }}
 			</div>
-		</NuxtLink>
+
+			<div class="ml-auto whitespace-nowrap text-pink-300" v-if="chapter.date">
+				{{ getDateInFrench(chapter.date) }}
+			</div>
+
+			<div class="ml-4" @click.stop="dlChapter(chapter.href)">dl</div>
+		</div>
 
 		<div v-if="max && chapters.length > max" @click="little = !little" class="cursor-pointer">
 			<svg
@@ -70,6 +74,12 @@ export default {
 			const [day, month, year] = fullDate.split(' ');
 
 			return `${day} ${month} ${year}`;
+		},
+
+		async dlChapter(uri) {
+			const response = await this.$axios.get('/api/dl/chapter', { params: { uri } });
+
+			if (response) console.log(response.data);
 		}
 	}
 };
@@ -82,7 +92,8 @@ export default {
 
 .chapter-link {
 	color: white;
-	&:hover {
+
+	&-item:hover {
 		border-radius: 8px;
 		color: rgb(249, 168, 212);
 	}
