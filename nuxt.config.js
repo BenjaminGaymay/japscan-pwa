@@ -1,5 +1,5 @@
 export default {
-	ssr: false,
+	// ssr: false,
 	server: {
 		port: 3333, // default: 3000
 		host: '0.0.0.0', // default: localhost,

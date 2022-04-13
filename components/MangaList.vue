@@ -2,14 +2,15 @@
 	<div class="list px-6">
 		<div class="manga" v-for="manga in mangas" :key="manga.href">
 			<NuxtLink
-				class="manga-name text-xl md:text-2xl text-blue-300"
+				class="manga-name text-xl text-blue-300 md:text-2xl"
 				:class="{ 'manga-name-hot': manga.hot }"
-				:to="manga.href"
-			>
+				:to="manga.href">
 				{{ manga.name }}
 			</NuxtLink>
 
+			<!-- <client-only> -->
 			<ChapterLinks class="ml-8 mt-1" :chapters="manga.chapters" :max="3" />
+			<!-- </client-only> -->
 		</div>
 	</div>
 </template>

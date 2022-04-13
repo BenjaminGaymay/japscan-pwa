@@ -4,7 +4,9 @@
 			<legend class="ml-3 px-1 text-blue-300">Historique</legend>
 
 			<p class="px-3 py-1">
-				<ChapterLinks :chapters="history" />
+				<client-only>
+					<ChapterLinks :chapters="history" />
+				</client-only>
 			</p>
 		</fieldset>
 	</div>
@@ -23,6 +25,7 @@ export default {
 
 	mounted() {
 		this.history = Object.keys(localStorage)
+			.filter(e => e.startsWith('[history]'))
 			.map(e => {
 				const { uri, date, chapter } = JSON.parse(localStorage.getItem(e));
 				return { name: chapter, href: uri, date };

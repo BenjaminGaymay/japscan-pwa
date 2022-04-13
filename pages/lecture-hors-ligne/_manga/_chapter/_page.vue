@@ -9,38 +9,37 @@
 </template>
 
 <script>
+import { get, set } from 'idb-keyval';
+
 export default {
 	data() {
 		return { loading: true, img: null, next: null };
 	},
 
-	mounted() {
+	async mounted() {
 		window.addEventListener('keyup', this.handleKeypress);
 
 		const uri = `/lecture-en-ligne/${this.$route.params.manga}/${this.$route.params.chapter}/${
 			this.$route.params.page || ''
 		}`;
 
-		this.$axios.get('/api/page', { params: { uri } }).then(response => {
-			if (response.status === 200 || response.status === 304) {
-				this.img = `/api/${response.data.img}`;
+		const localData = await get(`[page]${uri}`);
+		if (!localData) return;
 
-				this.next = response.data.next;
-				const chapter = response.data.chapterName;
+		this.img = localData.img;
+		this.next = localData.next.replace('/lecture-en-ligne/', '/lecture-hors-ligne/');
+		const chapter = localData.chapterName;
 
-				localStorage.setItem(
-					`[history]${this.$route.params.manga}`,
-					JSON.stringify({
-						uri,
-						date: new Date(),
-						chapter,
-						page: this.$route.params.page || 1
-					})
-				);
-			}
-
-			this.loading = false;
-		});
+		localStorage.setItem(
+			`[history]${this.$route.params.manga}`,
+			JSON.stringify({
+				uri,
+				date: new Date(),
+				chapter,
+				page: this.$route.params.page || 1
+			})
+		);
+		this.loading = false;
 	},
 
 	beforeDestroy() {

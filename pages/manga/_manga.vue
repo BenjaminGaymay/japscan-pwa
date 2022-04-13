@@ -34,7 +34,9 @@
 		<fieldset class="chapters-list my-6 mx-1" v-if="chapters">
 			<legend class="ml-3 px-1 text-blue-300">Chapitres</legend>
 			<p class="px-3 py-1">
-				<ChapterLinks :chapters="chapters" />
+				<client-only>
+					<ChapterLinks :chapters="chapters" />
+				</client-only>
 			</p>
 		</fieldset>
 

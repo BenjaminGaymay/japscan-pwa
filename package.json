@@ -9,25 +9,22 @@
 		"generate": "nuxt generate"
 	},
 	"dependencies": {
-		"@nuxtjs/pwa": "^3.3.5",
 		"@nuxtjs/axios": "^5.13.6",
+		"@nuxtjs/pwa": "^3.3.5",
 		"@nuxtjs/tailwindcss": "^4.2.1",
-		"nuxt": "^2.15.8",
-		"core-js": "^3.21.1",
-
-		"sass": "^1.49.0",
-		"sass-loader": "^10.1.1",
-		"postcss": "^8.3.5",
-
-		"express": "^4.17.3",
-		"moment": "^2.29.2",
-
 		"cloudscraper": "^4.6.0",
+		"core-js": "^3.21.1",
+		"express": "^4.17.3",
+		"idb-keyval": "^6.1.0",
+		"jimp": "^0.16.1",
+		"moment": "^2.29.2",
+		"nuxt": "^2.15.8",
+		"postcss": "^8.3.5",
 		"puppeteer": "^13.5.2",
 		"puppeteer-extra": "^3.2.3",
 		"puppeteer-extra-plugin-stealth": "^2.9.0",
-
-		"jimp": "^0.16.1",
+		"sass": "^1.49.0",
+		"sass-loader": "^10.1.1",
 		"vue2-touch-events": "^3.2.2"
 	},
 	"devDependencies": {
