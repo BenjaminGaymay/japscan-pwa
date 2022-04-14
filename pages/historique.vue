@@ -4,9 +4,7 @@
 			<legend class="ml-3 px-1 text-blue-300">Historique</legend>
 
 			<p class="px-3 py-1">
-				<client-only>
-					<ChapterLinks :chapters="history" />
-				</client-only>
+				<ChapterLinks :chapters="history" />
 			</p>
 		</fieldset>
 	</div>
@@ -24,6 +22,8 @@ export default {
 	},
 
 	mounted() {
+		// téléchargement pas détecté
+		// inconstance des noms de chapitre entre en/hors lignes
 		this.history = Object.keys(localStorage)
 			.filter(e => e.startsWith('[history]'))
 			.map(e => {

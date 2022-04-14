@@ -91,7 +91,7 @@ async function start() {
 			],
 			6: [
 				/id=\"tab-7\".*?>(.+?)<div class=\"tab-pane container \" id=\"tab-8\">/,
-				/<span data-id=\"7\".*?>(.+?)<span data-id=\"5\"/
+				/<span data-id=\"7\".*?>(.+?)<span data-id=\"8\"/
 			],
 			7: [/id=\"tab-8\".*?>(.+)/, /<span data-id=\"8\".*?>(.+)/]
 		};
@@ -117,9 +117,9 @@ async function start() {
 				cache.page = null;
 
 				choosenDay = uncluttered.match(req.query.day ? days[req.query.day][1] : days[0][1])[1];
-				// console.log(req.query.day ? days[req.query.day][1] : days[0][1]);
-				// fs.writeFileSync('error.html', uncluttered);
-				// fs.writeFileSync('regexed', choosenDay);
+				console.log(req.query.day ? days[req.query.day][1] : days[0][1]);
+				fs.writeFileSync('error.html', uncluttered);
+				fs.writeFileSync('regexed', choosenDay);
 			}
 
 			const mangaOfTheDay = [...choosenDay.match(/<h3 class=\"text-truncate.*?>.*?<\/div>/gm)];
@@ -272,6 +272,7 @@ async function start() {
 
 				const files = fs.readdirSync('assets/img');
 
+				// on skip des pages, faut revoir
 				// pourquoi faire une loop et pas direct send si le fichier existe ?
 				for (let file of files) {
 					if (file.startsWith(`${manga}-${chapter}-${nb}.`) && !sended) {
@@ -367,7 +368,7 @@ async function start() {
 
 					if (next.split(manga)[1].split('/')[1] != chapter) return resolve();
 
-					pages.push({ uri: next, img: 'empty' });
+					pages.push({ uri: next, img: 'error.png' });
 					page.goto(`https://japscan.se${next}`).catch(e => void e);
 				}
 			});
@@ -375,8 +376,6 @@ async function start() {
 
 		await page.goto(`https://japscan.se${req.query.uri}`);
 		await getURIs;
-
-		console.log(pages);
 
 		await page.close();
 
@@ -403,11 +402,15 @@ async function start() {
 
 		const cache = { url: null, timeout: null };
 		const getImgs = new Promise(resolve => {
+			let exitTimeout = setTimeout(resolve, 15000);
+
+			// il faudrait p-e faire une page par lien plutot que le goto (et une promise a chaque fois pour faire des retry)
 			iPage.on('response', async response => {
 				if (response.url().match(/https:\/\/cdn\.statically\.io\/img\/c\.japscan\..+/)) {
 					const matches = /.*\.(jpg|png|svg|gif)$/.exec(response.url());
 					if (matches && matches.length === 2) {
 						clearTimeout(cache.timeout);
+
 						const extension = matches[1];
 
 						const buffer = await response.buffer().catch(e => void e);
@@ -425,11 +428,15 @@ async function start() {
 						if (index >= pages.length) return resolve();
 
 						cache.timeout = setTimeout(() => {
+							if (!pages[index]) return;
 							const uri = `https://japscan.se${pages[index].uri}`;
 
 							if (uri !== cache.uri) {
 								cache.uri = uri;
+
+								clearTimeout(exitTimeout);
 								iPage.goto(uri).catch(e => void e);
+								exitTimeout = setTimeout(resolve, 15000);
 							}
 						}, 100);
 					}
@@ -441,6 +448,8 @@ async function start() {
 		await getImgs;
 
 		browser.close();
+
+		console.log(pages);
 
 		res.send(pages);
 	});

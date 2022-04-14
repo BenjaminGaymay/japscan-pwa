@@ -1,5 +1,5 @@
 <template>
-	<div class="mx-auto flex h-screen max-w-screen-md items-center justify-center text-white">
+	<div class="mx-auto flex h-full max-w-screen-md items-center justify-center text-white">
 		<Loader v-if="loading" />
 
 		<NuxtLink v-else-if="next && img" :to="next">
@@ -49,11 +49,8 @@ export default {
 
 	methods: {
 		handleKeypress(e) {
-			if (e.key == 'ArrowRight' && this.next) {
-				this.$router.push(this.next);
-			} else if (e.key == 'ArrowLeft' && this.$route.params.page) {
-				this.$router.go(-1);
-			}
+			if (e.key == 'ArrowRight' && this.next) this.$router.push(this.next);
+			else if (e.key == 'ArrowLeft' && this.$route.params.page) this.$router.go(-1);
 		}
 	}
 };

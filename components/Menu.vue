@@ -52,12 +52,18 @@
 					<div class="link mx-3"><span>―</span> Sorties du jour</div>
 				</NuxtLink>
 
+				<NuxtLink to="/telechargements" @click.native="open = false">
+					<div class="link mx-3 mt-2"><span>―</span> Téléchargements</div>
+				</NuxtLink>
+
 				<NuxtLink :to="`/manga/${mangaPage}`" v-if="mangaPage" @click.native="open = false">
 					<div class="link mx-3 mt-2"><span>―</span> Fiche du manga</div>
 				</NuxtLink>
 
-				<div class="link absolute bottom-16 mx-3">
-					<NuxtLink :to="`/historique`" @click.native="open = false"> <span>―</span> Historique </NuxtLink>
+				<div class="absolute bottom-16">
+					<NuxtLink :to="`/historique`" @click.native="open = false">
+						<div class="link mx-3"><span>―</span> Historique</div>
+					</NuxtLink>
 				</div>
 
 				<div
@@ -175,7 +181,7 @@ export default {
 
 		mangaPage() {
 			const path = this.$route.path;
-			return path.startsWith('/lecture-en-ligne/') ? path.split('/')[2] : null;
+			return path.match(/^\/lecture-(en|hors)-ligne\//) ? path.split('/')[2] : null;
 		}
 	},
 

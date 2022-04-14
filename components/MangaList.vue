@@ -8,9 +8,7 @@
 				{{ manga.name }}
 			</NuxtLink>
 
-			<!-- <client-only> -->
 			<ChapterLinks class="ml-8 mt-1" :chapters="manga.chapters" :max="3" />
-			<!-- </client-only> -->
 		</div>
 	</div>
 </template>

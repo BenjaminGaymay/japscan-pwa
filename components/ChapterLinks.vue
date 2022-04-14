@@ -12,7 +12,12 @@
 			v-for="chapter in max && little ? chapters.slice(0, max) : chapters"
 			:key="chapter.href"
 			class="chapter-link">
-			<NuxtLink :to="chapter.href">
+			<NuxtLink
+				:to="
+					!dlChapters.includes(chapter.name)
+						? chapter.href
+						: chapter.href.replace('/lecture-en-ligne/', '/lecture-hors-ligne/')
+				">
 				<div class="chapter-link-item mr-4 overflow-hidden overflow-ellipsis whitespace-nowrap capitalize">
 					{{ chapter.name }}
 				</div>
@@ -52,7 +57,7 @@
 			</div>
 
 			<div v-else class="ml-4 pt-1">
-				<svg width="17px" height="17px" viewBox="0 0 100 100">
+				<svg v-if="!removable" width="17px" height="17px" viewBox="0 0 100 100">
 					<g stroke="none" stroke-width="1" fill="none" stroke-linecap="round" stroke-linejoin="round">
 						<g transform="translate(2.000000, 2.000000)" stroke="rgb(147, 197, 253)" stroke-width="8">
 							<path
@@ -61,6 +66,21 @@
 								points="27.7058857 47.0210276 42.0345786 61.4826208 67.9945661 35.4382535"></polyline>
 						</g>
 					</g>
+				</svg>
+
+				<svg
+					v-else
+					class="blue-hover cursor-pointer"
+					xmlns="http://www.w3.org/2000/svg"
+					fill="#F9A8D4"
+					width="17px"
+					height="17px"
+					viewBox="0 0 92 92"
+					@click="removeChapter(chapter.name)">
+					<path
+						d="M70.7,64.3c1.8,1.8,1.8,4.6,0,6.4c-0.9,0.9-2,1.3-3.2,1.3c-1.2,0-2.3-0.4-3.2-1.3L46,52.4L27.7,70.7
+	c-0.9,0.9-2,1.3-3.2,1.3s-2.3-0.4-3.2-1.3c-1.8-1.8-1.8-4.6,0-6.4L39.6,46L21.3,27.7c-1.8-1.8-1.8-4.6,0-6.4c1.8-1.8,4.6-1.8,6.4,0
+	L46,39.6l18.3-18.3c1.8-1.8,4.6-1.8,6.4,0c1.8,1.8,1.8,4.6,0,6.4L52.4,46L70.7,64.3z" />
 				</svg>
 			</div>
 		</div>
@@ -88,7 +108,7 @@
 </template>
 
 <script>
-import { get, set } from 'idb-keyval';
+import { delMany, get, set } from 'idb-keyval';
 import Loader from './Loader.vue';
 
 export default {
@@ -102,6 +122,11 @@ export default {
 		max: {
 			type: Number,
 			default: null
+		},
+
+		removable: {
+			type: Boolean,
+			default: false
 		}
 	},
 
@@ -184,6 +209,20 @@ export default {
 
 				i += 1;
 			}
+		},
+
+		async removeChapter(name) {
+			this.dlStatus = 'Suppression du chapitre';
+			const chapter = await get(`[chapter]${name}`);
+			if (!chapter) return (this.dlStatus = null);
+
+			const pages = JSON.parse(chapter).map(e => `[page]${e.uri}`);
+			await delMany([pages, `[chapter]${name}`]);
+
+			setTimeout(() => {
+				this.dlChapters = this.dlChapters.filter(e => e !== name);
+				this.dlStatus = null;
+			}, 300);
 		}
 	}
 };
@@ -228,5 +267,9 @@ export default {
 	&:hover path {
 		fill: rgb(249, 168, 212);
 	}
+}
+
+.blue-hover:hover {
+	fill: rgb(147, 197, 253);
 }
 </style>

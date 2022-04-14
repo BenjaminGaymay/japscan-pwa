@@ -1,5 +1,5 @@
 <template>
-	<div class="mx-auto flex h-screen max-w-screen-md items-center justify-center text-white">
+	<div class="mx-auto flex h-full max-w-screen-md items-center justify-center text-white">
 		<Loader v-if="loading" />
 
 		<NuxtLink v-else-if="next && img" :to="next">
@@ -9,7 +9,7 @@
 </template>
 
 <script>
-import { get, set } from 'idb-keyval';
+import { get } from 'idb-keyval';
 
 export default {
 	data() {
@@ -27,7 +27,9 @@ export default {
 		if (!localData) return;
 
 		this.img = localData.img;
-		this.next = localData.next.replace('/lecture-en-ligne/', '/lecture-hors-ligne/');
+		this.next = localData.next
+			? localData.next.replace('/lecture-en-ligne/', '/lecture-hors-ligne/')
+			: '/telechargements';
 		const chapter = localData.chapterName;
 
 		localStorage.setItem(
@@ -48,11 +50,8 @@ export default {
 
 	methods: {
 		handleKeypress(e) {
-			if (e.key == 'ArrowRight' && this.next) {
-				this.$router.push(this.next);
-			} else if (e.key == 'ArrowLeft' && this.$route.params.page) {
-				this.$router.go(-1);
-			}
+			if (e.key == 'ArrowRight' && this.next) this.$router.push(this.next);
+			else if (e.key == 'ArrowLeft' && this.$route.params.page) this.$router.go(-1);
 		}
 	}
 };
