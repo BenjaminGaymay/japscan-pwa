@@ -1,10 +1,8 @@
 #!/bin/bash
 
-rm scans.zip
-zip -r scans.zip api components middleware nuxt.config.js package.json package-lock.json plugins static assets layouts pages store
+# ? docker run -it --rm --privileged tonistiigi/binfmt --install all
 
-scp scans.zip pi4-scans:/home/scans
-ssh pi4-scans -t ./rebuild.sh
+docker run -it --rm --privileged tonistiigi/binfmt --install all
+docker buildx build --platform linux/arm64,linux/amd64 -t registry.benjamin-gaymay.eu/mangas --push .
 
-ssh pi4-scans "rm scans.zip"
-rm scans.zip
+ssh -t pi4-mangas "./restart.sh"

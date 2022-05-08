@@ -64,7 +64,7 @@ export default {
 			.then(response => {
 				if (response.status === 200 || response.status === 304) {
 					this.infos = response.data.infos;
-					this.infos.img = `/api/${this.infos.img}`;
+					this.infos.img = this.infos.img;
 					this.chapters = response.data.chapters;
 				}
 			});

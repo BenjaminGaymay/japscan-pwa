@@ -32,7 +32,18 @@ export default {
 
 <style>
 body {
-	background-color: rgb(37, 37, 37);
+	background-color: #252525;
 	font-family: 'Droid Sans', sans-serif;
+}
+
+html,
+body,
+#__nuxt,
+#__layout {
+	max-width: 100vw;
+	max-height: 100vh;
+
+	overflow-x: hidden;
+	overscroll-behavior-y: contain;
 }
 </style>

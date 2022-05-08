@@ -11,7 +11,7 @@ The app needs to be run with Docker to ensure the compatibility between puppetee
 $ docker build -t japscan .
 
 # start server
-$ docker run -p 3333:3333 japscan
+$ docker run -p 8080:8080 japscan
 ```
 
-The app is available by default on [localhost:3333](http://localhost:3333/)
+The app is available by default on [localhost:8080](http://localhost:8080/)

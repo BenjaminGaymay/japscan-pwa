@@ -1,5 +1,5 @@
 <template>
-	<div class="mx-auto flex h-full max-w-screen-md items-center justify-center text-white">
+	<div class="mx-auto flex h-screen max-w-screen-md items-center justify-center text-white">
 		<Loader v-if="loading" />
 
 		<NuxtLink v-else-if="next && img" :to="next">
@@ -23,7 +23,8 @@ export default {
 
 		this.$axios.get('/api/page', { params: { uri } }).then(response => {
 			if (response.status === 200 || response.status === 304) {
-				this.img = `/api/${response.data.img}`;
+				// this.img = `/api/${response.data.img}`;
+				this.img = response.data.img;
 
 				this.next = response.data.next;
 				const chapter = response.data.chapterName;
@@ -59,6 +60,8 @@ export default {
 <style lang="scss" scoped>
 img {
 	margin: auto;
+
+	max-height: 100vh;
 	height: auto;
 	width: 100%;
 }

@@ -1,5 +1,5 @@
 <template>
-	<div class="mx-auto flex h-full max-w-screen-md items-center justify-center text-white">
+	<div class="mx-auto flex h-screen max-w-screen-md items-center justify-center text-white">
 		<Loader v-if="loading" />
 
 		<NuxtLink v-else-if="next && img" :to="next">
@@ -60,6 +60,8 @@ export default {
 <style lang="scss" scoped>
 img {
 	margin: auto;
+
+	max-height: 100vh;
 	height: auto;
 	width: 100%;
 }

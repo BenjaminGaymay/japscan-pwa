@@ -1,17 +1,95 @@
-FROM node:12
+FROM node:16-alpine as version
 
-RUN apt-get update && \
-    apt-get -y install xvfb gconf-service libasound2 libatk1.0-0 libc6 libcairo2 libcups2 \
-      libdbus-1-3 libexpat1 libfontconfig1 libgcc1 libgconf-2-4 libgdk-pixbuf2.0-0 libglib2.0-0 \
-      libgtk-3-0 libnspr4 libpango-1.0-0 libpangocairo-1.0-0 libstdc++6 libx11-6 libx11-xcb1 libxcb1 \
-      libxcomposite1 libxcursor1 libxdamage1 libxext6 libxfixes3 libxi6 libxrandr2 libxrender1 libxss1 \
-      libxtst6 ca-certificates fonts-liberation libappindicator1 libnss3 lsb-release xdg-utils wget && \
-    rm -rf /var/lib/apt/lists/*
+WORKDIR /scans
 
-# Add user so we don't need --no-sandbox.
-RUN groupadd -r pptruser && useradd -r -g pptruser -G audio,video pptruser \
-    && mkdir -p /home/pptruser/Downloads \
-    && chown -R pptruser:pptruser /home/pptruser
+COPY --chown=node:node package.json package-lock.json ./
 
-# Run everything after as non-privileged user.
-USER pptruser
+RUN node -e "['./package.json','./package-lock.json'].forEach(n => {  \
+  let p = require(n);                               \
+  p.version = '0.0.0';                              \
+  fs.writeFileSync(n, JSON.stringify(p));           \
+  });"
+
+
+FROM node:16-alpine as build
+
+WORKDIR /scans
+
+RUN apk add \
+  --no-cache \
+  --virtual build-dependencies \
+  python3 \
+  chromium \
+  make \
+  g++ \
+  nss \
+  freetype \
+  harfbuzz \
+  ca-certificates \
+  ttf-freefont
+
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
+  PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+
+
+COPY --chown=node:node --from=version /scans/package.json /scans/package-lock.json ./
+RUN npm ci --only=production
+RUN npm cache clean --force
+
+COPY --chown=node:node . .
+
+RUN npm run build
+
+ENV NUXT_HOST=0.0.0.0
+ENV NUXT_PORT=8080
+
+USER node
+
+EXPOSE 8080
+EXPOSE 8000
+
+CMD [ "npm", "start" ]
+
+
+# FROM node:16 as version
+
+# WORKDIR /mangas
+
+# COPY --chown=node:node package.json package-lock.json ./
+
+# RUN node -e "['./package.json','./package-lock.json'].forEach(n => {  \
+#   let p = require(n);                               \
+#   p.version = '0.0.0';                              \
+#   fs.writeFileSync(n, JSON.stringify(p));           \
+#   });"
+
+
+# FROM node:16 as build
+
+# WORKDIR /mangas
+
+# RUN apt update
+# RUN apt install -y libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libgbm1 libasound2 libpangocairo-1.0-0 libxss1 libgtk-3-0 libx11-xcb1 chromium
+
+# RUN ln -s /usr/bin/chromium /usr/bin/chromium-browser
+
+# ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
+#   PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+
+# COPY --chown=node:node --from=version /mangas/package.json /mangas/package-lock.json ./
+# RUN npm ci --only=production
+# RUN npm cache clean --force
+
+# COPY --chown=node:node . .
+
+# RUN npm run build
+
+# ENV NUXT_HOST=0.0.0.0
+# ENV NUXT_PORT=8080
+
+# USER node
+
+# EXPOSE 8080
+# EXPOSE 8000
+
+# CMD [ "npm", "start" ]
