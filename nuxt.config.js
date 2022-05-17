@@ -1,5 +1,5 @@
 export default {
-	ssr: true,
+	ssr: false,
 	loading: false,
 
 	server: {
@@ -62,6 +62,7 @@ export default {
 		manifest: {
 			name: 'Mangas',
 			lang: 'fr',
+			display: 'fullscreen',
 			background_color: '#252525'
 		}
 	},

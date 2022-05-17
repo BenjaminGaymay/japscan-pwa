@@ -1,5 +1,13 @@
 <template>
 	<div v-touch:swipe.left="() => toggleMenu(false)" v-touch:swipe.right="() => toggleMenu(true)" class="min-h-screen">
+		<!-- <div
+        class="h-safe-area-inset-top"
+        :class="{
+            'bg-black': !transparent
+                        || (transparent && scrollTop > 0)
+        }"
+    ></div> -->
+
 		<div v-if="big">
 			<Menu />
 		</div>
@@ -14,6 +22,13 @@
 
 <script>
 export default {
+	meta: [
+		{ name: 'viewport', content: 'width=device-width; initial-scale=1; viewport-fit=cover' },
+		{ name: 'mobile-web-app-capable', content: 'yes' },
+		{ name: 'apple-mobile-web-app-capable', content: 'yes' }
+		// { name: 'apple-mobile-web-app-status-bar-style', content: 'black-translucent' }
+	],
+
 	data() {
 		return { big: false, menu: false };
 	},
@@ -46,4 +61,8 @@ body,
 	overflow-x: hidden;
 	overscroll-behavior-y: contain;
 }
+
+/* .root {
+	padding-top: env(safe-area-inset-top);
+} */
 </style>

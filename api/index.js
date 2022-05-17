@@ -1,5 +1,4 @@
 import express from 'express';
-import moment from 'moment';
 import fetch from 'node-fetch';
 
 const app = express();
@@ -46,11 +45,23 @@ app.use((req, res, next) => {
 		const elapsedHrTime = process.hrtime(startHrTime);
 		const elapsedTimeInMs = elapsedHrTime[0] * 1000 + elapsedHrTime[1] / 1e6;
 
+		const now = new Date();
+		const formatted = now.toLocaleDateString('fr-fr', {
+			month: 'short',
+			year: 'numeric',
+			hour: '2-digit',
+			day: '2-digit',
+			minute: '2-digit'
+		});
+
+		const split = formatted.split(', ');
+
 		console.log(
 			'[%s] %s %s : %fms - %s',
-			moment().format('HH:mm DD MMM YYYY'),
+			`${split[1]} ${split[0]}`,
 			req.method,
 			decodeURIComponent(req.originalUrl),
+
 			Math.round(elapsedTimeInMs),
 			res.statusCode
 		);
