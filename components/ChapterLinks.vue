@@ -176,15 +176,14 @@ export default {
 
 		async dlChapter(name, uri) {
 			this.dlStatus = 'Chargement du chapitre';
-			const response = await this.$axios.get('/api/dl/chapter', { params: { uri } });
+			const response = await this.$axios.get('/api/dl/chapter', { params: { uri }, timeout: 180000 });
 
 			if (response) {
 				const pages = response.data;
 
 				await set(`[chapter]${name}`, JSON.stringify(pages));
-				this.dlChapters.push(name);
-
 				await this.dlPages(pages, name);
+				this.dlChapters.push(name);
 			}
 
 			this.dlStatus = null;
