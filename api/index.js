@@ -180,9 +180,21 @@ async function getPage(url, tries = 0) {
 		const next = text.tryMatch(/data-next-link=\"(.+?)\"/);
 		const chapterName = text.tryMatch(/<h1.+?>(.+?)<\/h1/);
 
-		const decoded = uri.replace(CYPHER_REGEX, c => CYPHER[c]);
+		const nextImg = text.tryMatch(/data-next-image=\"https:\/\/c\.japscan\.ws\/(.+?)"/);
+		const [nUri, nExt] = nextImg ? nextImg.split('.') : ['', null];
 
-		return { img: `https://cdn.statically.io/img/c.japscan.ws/f=auto,w=600/${decoded}.${ext}`, next, chapterName };
+		const decoded = uri.replace(CYPHER_REGEX, c => CYPHER[c]);
+		const nDecoded = nUri.replace(CYPHER_REGEX, c => CYPHER[c]);
+
+		const options = text.match(/<option/g) || [];
+
+		return {
+			chapterName,
+			pages: options.length,
+			img: `https://cdn.statically.io/img/c.japscan.ws/f=auto,w=600/${decoded}.${ext}`,
+			next,
+			nextImg: nextImg ? `https://cdn.statically.io/img/c.japscan.ws/f=auto,w=600/${nDecoded}.${nExt}` : null
+		};
 	} catch (e) {
 		console.log('error', e);
 		if (tries > 2) return { img: null, next: null, chapterName: null };

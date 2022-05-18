@@ -1,17 +1,29 @@
 <template>
-	<div class="mx-auto flex h-screen max-w-screen-md items-center justify-center text-white">
+	<div class="mx-auto flex h-screen max-w-screen-md flex-wrap items-center justify-center gap-x-6 text-white">
 		<Loader v-if="loading" />
 
-		<NuxtLink v-else-if="next && img" :to="next">
-			<img :src="img" />
-		</NuxtLink>
+		<template v-else-if="next && img">
+			<div></div>
+
+			<NuxtLink :to="next">
+				<img :src="img" />
+			</NuxtLink>
+
+			<div class="self-end py-7">Page {{ pages }}</div>
+		</template>
 	</div>
 </template>
 
 <script>
 export default {
+	head() {
+		return {
+			link: [{ rel: 'preload', as: 'image', href: this.nextImg }]
+		};
+	},
+
 	data() {
-		return { loading: true, img: null, next: null };
+		return { loading: true, img: null, next: null, nextImg: null, pages: null };
 	},
 
 	mounted() {
@@ -23,10 +35,14 @@ export default {
 
 		this.$axios.get('/api/page', { params: { uri } }).then(response => {
 			if (response.status === 200 || response.status === 304) {
-				// this.img = `/api/${response.data.img}`;
 				this.img = response.data.img;
 
 				this.next = response.data.next;
+				this.nextImg = response.data.nextImg;
+
+				const pageIndex = this.$route.params.page ? this.$route.params.page.split('.')[0] : 1;
+				this.pages = `${pageIndex}/${response.data.pages}`;
+
 				const chapter = response.data.chapterName;
 
 				localStorage.setItem(

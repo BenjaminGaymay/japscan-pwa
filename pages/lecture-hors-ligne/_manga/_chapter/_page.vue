@@ -1,19 +1,25 @@
 <template>
-	<div class="mx-auto flex h-screen max-w-screen-md items-center justify-center text-white">
+	<div class="mx-auto flex h-screen max-w-screen-md flex-wrap items-center justify-center gap-x-6 text-white">
 		<Loader v-if="loading" />
 
-		<NuxtLink v-else-if="next && img" :to="next">
-			<img :src="img" />
-		</NuxtLink>
+		<template v-else-if="next && img">
+			<div></div>
+
+			<NuxtLink :to="next">
+				<img :src="img" />
+			</NuxtLink>
+
+			<div class="self-end py-7">Page {{ pages }}</div>
+		</template>
 	</div>
 </template>
 
 <script>
-import { get } from 'idb-keyval';
+import { get, keys } from 'idb-keyval';
 
 export default {
 	data() {
-		return { loading: true, img: null, next: null };
+		return { loading: true, img: null, next: null, pages: null };
 	},
 
 	async mounted() {
@@ -42,6 +48,13 @@ export default {
 			})
 		);
 		this.loading = false;
+
+		const pages = (await keys()).filter(e =>
+			e.startsWith(`[page]/lecture-en-ligne/${this.$route.params.manga}/${this.$route.params.chapter}`)
+		);
+
+		const pageIndex = this.$route.params.page ? this.$route.params.page.split('.')[0] : 1;
+		this.pages = `${pageIndex}/${pages.length}`;
 	},
 
 	beforeDestroy() {

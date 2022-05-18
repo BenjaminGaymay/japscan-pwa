@@ -189,17 +189,13 @@ export default {
 			this.dlStatus = null;
 		},
 
-		async dlPages(pages, chapter) {
-			let i = 0;
+		tryDl(img, uri, next, chapter) {
+			const page = new Image();
+			page.crossOrigin = 'anonymous';
 
-			for (const { uri, img } of pages) {
-				this.dlStatus = `Téléchargement de la page ${i + 1}/${pages.length}`;
-
-				const page = new Image();
-				page.crossOrigin = 'anonymous';
-
-				const promise = new Promise(resolve => {
-					page.addEventListener('load', async () => {
+			const promise = new Promise((resolve, reject) => {
+				page.addEventListener('load', async () => {
+					try {
 						const canvas = document.createElement('canvas');
 						canvas.width = page.width;
 						canvas.height = page.height;
@@ -208,17 +204,54 @@ export default {
 						ctx.drawImage(page, 0, 0);
 
 						const dataURL = canvas.toDataURL('image/png');
+
 						await set(`[page]${uri}`, {
 							img: dataURL,
-							next: i + 1 < pages.length ? pages[i + 1].uri : null,
+							next: next,
 							chapterName: chapter
 						});
 						resolve();
-					});
+					} catch (e) {
+						console.log(e);
+						reject(e);
+					}
 				});
+			});
 
-				page.src = img;
-				await promise;
+			page.src = img;
+			return promise;
+		},
+
+		async dlPages(pages, chapter) {
+			let i = 0;
+
+			for (const { uri, img } of pages) {
+				this.dlStatus = `Téléchargement de la page ${i + 1}/${pages.length}`;
+
+				const success = false;
+				let tries = 0;
+
+				while (tries < 5) {
+					try {
+						console.log('try');
+						await this.tryDl(img, uri, i + 1 < pages.length ? pages[i + 1].uri : null, chapter);
+						success = true;
+
+						break;
+					} catch (e) {
+						console.log(e);
+						tries += 1;
+					}
+				}
+
+				if (!success) {
+					console.log('erreur');
+					this.dlStatus = 'Une erreur est survenue';
+
+					return setTimeout(() => {
+						this.dlStatus = null;
+					}, 300);
+				}
 
 				i += 1;
 			}
